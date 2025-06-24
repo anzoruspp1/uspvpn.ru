@@ -4,6 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Аренда авто</title>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
   <style>
     body { font-family: sans-serif; padding: 20px; }
     input, button { display: block; margin: 10px 0; padding: 10px; width: 100%; max-width: 400px; }
@@ -22,58 +27,60 @@
   <div id="records"></div>
 
   <script>
-    let records = [];
+    // ✅ Твой Firebase конфиг
+    const firebaseConfig = {
+      apiKey: "AIzaSyDr1zshWL8pZBDLvfQUmxLBk0UES0V49Zw",
+      authDomain: "prokat-68146.firebaseapp.com",
+      projectId: "prokat-68146",
+      storageBucket: "prokat-68146.firebasestorage.app",
+      messagingSenderId: "1028277394548",
+      appId: "1:1028277394548:web:d7704462963048b6134521"
+    };
 
-    function loadRecords() {
-      fetch('load.php')
-        .then(response => response.json())
-        .then(data => {
-          records = data || [];
-          records.forEach(createRecordElement);
-        });
-    }
-
-    function saveRecords() {
-      fetch('save.php', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(records)
-      });
-    }
+    // Инициализация Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
     function addRecord() {
       const name = document.getElementById('name').value.trim();
       const phone = document.getElementById('phone').value.trim();
       const hours = parseInt(document.getElementById('hours').value);
 
-      if (!name || !phone || isNaN(hours)) {
-        alert('Пожалуйста, заполните все поля.');
+      if (!name || !phone || !hours || hours <= 0) {
+        alert('Заполните все поля!');
         return;
       }
 
       const endTime = new Date(Date.now() + hours * 3600 * 1000).toISOString();
-      const record = { id: Date.now(), name, phone, endTime };
-      records.push(record);
-      createRecordElement(record);
-      saveRecords();
+      db.collection("arenda").add({ name, phone, endTime })
+        .then(() => {
+          document.getElementById('name').value = '';
+          document.getElementById('phone').value = '';
+          document.getElementById('hours').value = '';
+        });
+    }
 
-      document.getElementById('name').value = '';
-      document.getElementById('phone').value = '';
-      document.getElementById('hours').value = '';
+    function loadRecords() {
+      db.collection("arenda").onSnapshot(snapshot => {
+        const container = document.getElementById('records');
+        container.innerHTML = '';
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          createRecordElement(doc.id, data);
+        });
+      });
     }
 
     function deleteRecord(id) {
-      document.getElementById(`record-${id}`).remove();
-      records = records.filter(r => r.id !== id);
-      saveRecords();
+      db.collection("arenda").doc(id).delete();
     }
 
-    function createRecordElement(record) {
-      const container = document.createElement('div');
-      container.className = 'record';
-      container.id = `record-${record.id}`;
-      const end = new Date(record.endTime);
+    function createRecordElement(id, record) {
+      const div = document.createElement('div');
+      div.className = 'record';
+      div.id = `record-${id}`;
 
+      const end = new Date(record.endTime);
       const countdown = document.createElement('p');
 
       function updateCountdown() {
@@ -92,16 +99,16 @@
       updateCountdown();
       const interval = setInterval(updateCountdown, 1000);
 
-      container.innerHTML = `<strong>${record.name}</strong><br>Телефон: ${record.phone}`;
-      container.appendChild(countdown);
+      div.innerHTML = `<strong>${record.name}</strong><br>Телефон: ${record.phone}`;
+      div.appendChild(countdown);
 
-      const delBtn = document.createElement('button');
-      delBtn.className = 'delete-btn';
-      delBtn.textContent = 'Удалить';
-      delBtn.onclick = () => deleteRecord(record.id);
-      container.appendChild(delBtn);
+      const btn = document.createElement('button');
+      btn.className = 'delete-btn';
+      btn.textContent = 'Удалить';
+      btn.onclick = () => deleteRecord(id);
+      div.appendChild(btn);
 
-      document.getElementById('records').appendChild(container);
+      document.getElementById('records').appendChild(div);
     }
 
     loadRecords();
