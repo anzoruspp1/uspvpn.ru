@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Аренда авто</title>
 
   <!-- Firebase SDK -->
@@ -13,12 +13,13 @@
     body {
       background-color: #121212;
       color: #fff;
-      font-family: 'Segoe UI', sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       margin: 0;
       padding: 20px;
       display: flex;
       flex-direction: column;
       align-items: center;
+      min-height: 100vh;
     }
 
     .container {
@@ -35,9 +36,6 @@
       border-radius: 6px;
       font-size: 16px;
       box-sizing: border-box;
-    }
-
-    input {
       background-color: #1e1e1e;
       color: #fff;
     }
@@ -73,16 +71,28 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      font-weight: 600;
+      font-size: 1.1em;
+    }
+
+    .record-header span {
+      font-weight: normal;
+      font-size: 0.9em;
+      color: #aaa;
     }
 
     .delete-btn {
       background-color: #e53935;
       color: white;
       border: none;
-      padding: 5px 10px;
+      padding: 6px 12px;
       border-radius: 4px;
       font-size: 14px;
       cursor: pointer;
+      margin-top: 10px;
+      width: auto;
+      align-self: flex-start;
+      transition: background-color 0.2s;
     }
 
     .delete-btn:hover {
@@ -94,9 +104,9 @@
   <div class="container">
     <h1>🚗 Аренда авто</h1>
 
-    <input type="text" id="name" placeholder="Имя арендатора">
-    <input type="text" id="phone" placeholder="Телефон">
-    <input type="number" id="hours" placeholder="Часов аренды" min="1">
+    <input type="text" id="name" placeholder="Имя арендатора" autocomplete="off" />
+    <input type="text" id="phone" placeholder="Телефон" autocomplete="off" />
+    <input type="number" id="minutes" placeholder="Минут аренды" min="1" />
     <button onclick="addRecord()">💾 Сохранить</button>
 
     <div id="records"></div>
@@ -133,23 +143,27 @@
     function addRecord() {
       const name = document.getElementById('name').value.trim();
       const phone = document.getElementById('phone').value.trim();
-      const hours = parseInt(document.getElementById('hours').value);
-      if (!name || !phone || !hours || hours <= 0) {
-        alert('Пожалуйста, заполните все поля.');
+      const minutes = parseInt(document.getElementById('minutes').value, 10);
+
+      if (!name || !phone || !minutes || minutes <= 0) {
+        alert('Пожалуйста, заполните все поля корректно.');
         return;
       }
-      const endTime = new Date(Date.now() + hours * 3600 * 1000).toISOString();
+
+      const endTime = new Date(Date.now() + minutes * 60 * 1000).toISOString();
       db.collection("arenda").add({ name, phone, endTime });
+
+      // Очистить поля
       document.getElementById('name').value = '';
       document.getElementById('phone').value = '';
-      document.getElementById('hours').value = '';
+      document.getElementById('minutes').value = '';
     }
 
     function loadRecords() {
-      db.collection("arenda").onSnapshot(snap => {
+      db.collection("arenda").onSnapshot(snapshot => {
         const container = document.getElementById('records');
         container.innerHTML = '';
-        snap.forEach(doc => createRecordElement(doc.id, doc.data()));
+        snapshot.forEach(doc => createRecordElement(doc.id, doc.data()));
       });
     }
 
@@ -214,6 +228,7 @@
       div.appendChild(countdown);
       div.appendChild(extra);
       div.appendChild(delBtn);
+
       document.getElementById('records').appendChild(div);
     }
 
