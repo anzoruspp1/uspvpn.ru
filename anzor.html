@@ -10,24 +10,113 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
   <style>
-    body { font-family: sans-serif; padding: 20px; }
-    input, button { display: block; margin: 10px 0; padding: 10px; width: 100%; max-width: 400px; }
-    .record { border: 1px solid #ccc; margin-top: 10px; padding: 10px; max-width: 400px; }
-    .delete-btn { background-color: #e53935; color: white; border: none; padding: 5px; margin-top: 5px; cursor: pointer; }
+    body {
+      background-color: #121212;
+      color: #fff;
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 480px;
+    }
+
+    input, button {
+      display: block;
+      margin: 10px 0;
+      padding: 14px;
+      width: 100%;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    input {
+      background-color: #1e1e1e;
+      color: #fff;
+    }
+
+    input::placeholder {
+      color: #bbb;
+    }
+
+    button {
+      background: linear-gradient(135deg, #00c6ff, #0072ff);
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    button:hover {
+      transform: scale(1.02);
+      box-shadow: 0 4px 10px rgba(0, 114, 255, 0.4);
+    }
+
+    .record {
+      border: 1px solid #333;
+      margin-top: 12px;
+      padding: 14px;
+      background-color: #1e1e1e;
+      border-radius: 6px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .record-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .delete-btn {
+      background-color: #e53935;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .delete-btn:hover {
+      background-color: #d32f2f;
+    }
+
+    @media (max-width: 500px) {
+      input, button, .record {
+        margin: 8px 0;
+      }
+    }
   </style>
 </head>
 <body>
-  <h1>Запись арендатора</h1>
+  <div class="container">
+    <h1>🚗 Аренда авто</h1>
 
-  <input type="text" id="name" placeholder="Имя арендатора">
-  <input type="text" id="phone" placeholder="Телефон">
-  <input type="number" id="hours" placeholder="Часов аренды" min="1">
-  <button onclick="addRecord()">Сохранить</button>
+    <input type="text" id="name" placeholder="Имя арендатора">
+    <input type="text" id="phone" placeholder="Телефон">
+    <input type="number" id="hours" placeholder="Часов аренды" min="1">
+    <button onclick="addRecord()">💾 Сохранить</button>
 
-  <div id="records"></div>
+    <div id="records"></div>
+  </div>
 
   <script>
-    // ✅ Твой Firebase конфиг
+    // 🔐 PIN для доступа (можешь изменить)
+    const PIN = '1234';
+    const entered = prompt('Введите PIN для доступа:');
+    if (entered !== PIN) {
+      document.body.innerHTML = '<h2 style="color:#e53935; text-align:center;">Неверный PIN. Доступ запрещён.</h2>';
+      throw new Error("Access denied");
+    }
+
     const firebaseConfig = {
       apiKey: "AIzaSyDr1zshWL8pZBDLvfQUmxLBk0UES0V49Zw",
       authDomain: "prokat-68146.firebaseapp.com",
@@ -37,7 +126,6 @@
       appId: "1:1028277394548:web:d7704462963048b6134521"
     };
 
-    // Инициализация Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
@@ -45,29 +133,22 @@
       const name = document.getElementById('name').value.trim();
       const phone = document.getElementById('phone').value.trim();
       const hours = parseInt(document.getElementById('hours').value);
-
       if (!name || !phone || !hours || hours <= 0) {
-        alert('Заполните все поля!');
+        alert('Пожалуйста, заполните все поля.');
         return;
       }
-
       const endTime = new Date(Date.now() + hours * 3600 * 1000).toISOString();
-      db.collection("arenda").add({ name, phone, endTime })
-        .then(() => {
-          document.getElementById('name').value = '';
-          document.getElementById('phone').value = '';
-          document.getElementById('hours').value = '';
-        });
+      db.collection("arenda").add({ name, phone, endTime });
+      document.getElementById('name').value = '';
+      document.getElementById('phone').value = '';
+      document.getElementById('hours').value = '';
     }
 
     function loadRecords() {
-      db.collection("arenda").onSnapshot(snapshot => {
+      db.collection("arenda").onSnapshot(snap => {
         const container = document.getElementById('records');
         container.innerHTML = '';
-        snapshot.forEach(doc => {
-          const data = doc.data();
-          createRecordElement(doc.id, data);
-        });
+        snap.forEach(doc => createRecordElement(doc.id, doc.data()));
       });
     }
 
@@ -75,39 +156,58 @@
       db.collection("arenda").doc(id).delete();
     }
 
-    function createRecordElement(id, record) {
+    function createRecordElement(id, rec) {
       const div = document.createElement('div');
       div.className = 'record';
-      div.id = `record-${id}`;
 
-      const end = new Date(record.endTime);
+      const header = document.createElement('div');
+      header.className = 'record-header';
+      header.innerHTML = `<strong>${rec.name}</strong><span>📞 ${rec.phone}</span>`;
+
       const countdown = document.createElement('p');
+      const extra = document.createElement('p');
+      extra.style.fontSize = '14px';
+      extra.style.color = '#aaa';
 
-      function updateCountdown() {
-        const diff = end - new Date();
-        if (diff <= 0) {
-          countdown.textContent = '⏰ Время аренды истекло!';
-          clearInterval(interval);
-          return;
+      const end = new Date(rec.endTime);
+      let interval = null;
+
+      function update() {
+        const now = new Date();
+        const diff = end - now;
+        let text = '';
+        if (diff >= 0) {
+          const h = Math.floor(diff / 3600000);
+          const m = Math.floor((diff % 3600000) / 60000);
+          const s = Math.floor((diff % 60000) / 1000);
+          text = `⏳ Останется: ${h}ч ${m}м ${s}с`;
+          extra.textContent = '';
+        } else {
+          const passed = -diff;
+          const h = Math.floor(passed / 3600000);
+          const m = Math.floor((passed % 3600000) / 60000);
+          const s = Math.floor((passed % 60000) / 1000);
+          text = '⏰ Время истекло!';
+          extra.textContent = `Прошло: ${h}ч ${m}м ${s}с`;
         }
-        const h = Math.floor(diff / 3600000);
-        const m = Math.floor((diff % 3600000) / 60000);
-        const s = Math.floor((diff % 60000) / 1000);
-        countdown.textContent = `⏳ Осталось: ${h}ч ${m}м ${s}с`;
+        countdown.textContent = text;
       }
 
-      updateCountdown();
-      const interval = setInterval(updateCountdown, 1000);
+      update();
+      interval = setInterval(update, 1000);
 
-      div.innerHTML = `<strong>${record.name}</strong><br>Телефон: ${record.phone}`;
+      const delBtn = document.createElement('button');
+      delBtn.className = 'delete-btn';
+      delBtn.textContent = 'Удалить';
+      delBtn.onclick = () => {
+        clearInterval(interval);
+        deleteRecord(id);
+      };
+
+      div.appendChild(header);
       div.appendChild(countdown);
-
-      const btn = document.createElement('button');
-      btn.className = 'delete-btn';
-      btn.textContent = 'Удалить';
-      btn.onclick = () => deleteRecord(id);
-      div.appendChild(btn);
-
+      div.appendChild(extra);
+      div.appendChild(delBtn);
       document.getElementById('records').appendChild(div);
     }
 
