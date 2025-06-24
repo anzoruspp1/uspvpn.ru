@@ -3,62 +3,20 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Аренда</title>
+  <title>Аренда авто</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      background: #f9f9f9;
-    }
-    h1 {
-      text-align: center;
-    }
-    input, button {
-      margin: 10px 0;
-      padding: 10px;
-      width: 100%;
-      max-width: 400px;
-      font-size: 16px;
-      box-sizing: border-box;
-    }
-    button {
-      background-color: #1976d2;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #1565c0;
-    }
-    .record {
-      background: white;
-      padding: 15px;
-      margin-top: 15px;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      max-width: 400px;
-    }
-    .countdown {
-      margin-top: 5px;
-      font-weight: bold;
-    }
-    .delete-btn {
-      margin-top: 10px;
-      background-color: #e53935;
-    }
-    @media (max-width: 500px) {
-      input, button, .record {
-        max-width: 100%;
-      }
-    }
+    body { font-family: sans-serif; padding: 20px; }
+    input, button { display: block; margin: 10px 0; padding: 10px; width: 100%; max-width: 400px; }
+    .record { border: 1px solid #ccc; margin-top: 10px; padding: 10px; max-width: 400px; }
+    .delete-btn { background-color: #e53935; color: white; border: none; padding: 5px; margin-top: 5px; cursor: pointer; }
   </style>
 </head>
 <body>
   <h1>Запись арендатора</h1>
 
-  <input type="text" id="name" placeholder="Имя арендатора" />
-  <input type="text" id="phone" placeholder="Телефон" />
-  <input type="number" id="hours" placeholder="Часов аренды" min="1" />
+  <input type="text" id="name" placeholder="Имя арендатора">
+  <input type="text" id="phone" placeholder="Телефон">
+  <input type="number" id="hours" placeholder="Часов аренды" min="1">
   <button onclick="addRecord()">Сохранить</button>
 
   <div id="records"></div>
@@ -67,93 +25,83 @@
     let records = [];
 
     function loadRecords() {
-      const data = localStorage.getItem("rentalRecords");
-      if (data) {
-        records = JSON.parse(data);
-        records.forEach(createRecordElement);
-      }
+      fetch('load.php')
+        .then(response => response.json())
+        .then(data => {
+          records = data || [];
+          records.forEach(createRecordElement);
+        });
     }
 
     function saveRecords() {
-      localStorage.setItem("rentalRecords", JSON.stringify(records));
+      fetch('save.php', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(records)
+      });
     }
 
     function addRecord() {
-      const name = document.getElementById("name").value.trim();
-      const phone = document.getElementById("phone").value.trim();
-      const hours = parseInt(document.getElementById("hours").value);
+      const name = document.getElementById('name').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const hours = parseInt(document.getElementById('hours').value);
 
-      if (!name || !phone || isNaN(hours) || hours <= 0) {
-        alert("Заполните все поля правильно!");
+      if (!name || !phone || isNaN(hours)) {
+        alert('Пожалуйста, заполните все поля.');
         return;
       }
 
-      const now = new Date();
-      const endTime = new Date(now.getTime() + hours * 60 * 60 * 1000);
-
-      const record = {
-        id: Date.now(),
-        name,
-        phone,
-        endTime: endTime.toISOString()
-      };
-
+      const endTime = new Date(Date.now() + hours * 3600 * 1000).toISOString();
+      const record = { id: Date.now(), name, phone, endTime };
       records.push(record);
-      saveRecords();
       createRecordElement(record);
-      clearInputs();
+      saveRecords();
+
+      document.getElementById('name').value = '';
+      document.getElementById('phone').value = '';
+      document.getElementById('hours').value = '';
     }
 
-    function clearInputs() {
-      document.getElementById("name").value = "";
-      document.getElementById("phone").value = "";
-      document.getElementById("hours").value = "";
+    function deleteRecord(id) {
+      document.getElementById(`record-${id}`).remove();
+      records = records.filter(r => r.id !== id);
+      saveRecords();
     }
 
     function createRecordElement(record) {
-      const container = document.createElement("div");
-      container.className = "record";
+      const container = document.createElement('div');
+      container.className = 'record';
       container.id = `record-${record.id}`;
+      const end = new Date(record.endTime);
 
-      const info = document.createElement("div");
-      info.innerHTML = `<strong>${record.name}</strong><br>Телефон: ${record.phone}`;
-
-      const countdown = document.createElement("div");
-      countdown.className = "countdown";
-
-      const delBtn = document.createElement("button");
-      delBtn.textContent = "Удалить";
-      delBtn.className = "delete-btn";
-      delBtn.onclick = () => {
-        document.getElementById(`record-${record.id}`).remove();
-        records = records.filter(r => r.id !== record.id);
-        saveRecords();
-      };
-
-      container.appendChild(info);
-      container.appendChild(countdown);
-      container.appendChild(delBtn);
-      document.getElementById("records").appendChild(container);
+      const countdown = document.createElement('p');
 
       function updateCountdown() {
-        const now = new Date();
-        const end = new Date(record.endTime);
-        const diff = end - now;
-
+        const diff = end - new Date();
         if (diff <= 0) {
-          countdown.textContent = "⏰ Время аренды истекло!";
+          countdown.textContent = '⏰ Время аренды истекло!';
           clearInterval(interval);
           return;
         }
-
-        const h = Math.floor(diff / (1000 * 60 * 60));
-        const m = Math.floor((diff / (1000 * 60)) % 60);
-        const s = Math.floor((diff / 1000) % 60);
+        const h = Math.floor(diff / 3600000);
+        const m = Math.floor((diff % 3600000) / 60000);
+        const s = Math.floor((diff % 60000) / 1000);
         countdown.textContent = `⏳ Осталось: ${h}ч ${m}м ${s}с`;
       }
 
       updateCountdown();
       const interval = setInterval(updateCountdown, 1000);
+
+      container.innerHTML = `<strong>${record.name}</strong><br>Телефон: ${record.phone}`;
+      container.appendChild(countdown);
+
+      const delBtn = document.createElement('button');
+      delBtn.className = 'delete-btn';
+      delBtn.textContent = 'Удалить';
+      delBtn.onclick = () => deleteRecord(record.id);
+      container.appendChild(delBtn);
+
+      document.getElementById('records').appendChild(container);
     }
 
     loadRecords();
