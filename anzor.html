@@ -88,12 +88,6 @@
     .delete-btn:hover {
       background-color: #d32f2f;
     }
-
-    @media (max-width: 500px) {
-      input, button, .record {
-        margin: 8px 0;
-      }
-    }
   </style>
 </head>
 <body>
@@ -109,12 +103,19 @@
   </div>
 
   <script>
-    // 🔐 PIN для доступа (можешь изменить)
-    const PIN = '1234';
-    const entered = prompt('Введите PIN для доступа:');
-    if (entered !== PIN) {
-      document.body.innerHTML = '<h2 style="color:#e53935; text-align:center;">Неверный PIN. Доступ запрещён.</h2>';
-      throw new Error("Access denied");
+    // 🔐 ВСТАВЬ СЮДА СВОИ ДАННЫЕ от Telegram Bot
+    const TELEGRAM_BOT_TOKEN = '8162814522:AAHwpKtPXnQUPlCUG1TFJuvAVtn0LzfxvR4';
+    const TELEGRAM_CHAT_ID = '7319588305';
+
+    function sendTelegramMessage(text) {
+      fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: TELEGRAM_CHAT_ID,
+          text: text
+        })
+      }).catch(err => console.error('Ошибка отправки в Telegram:', err));
     }
 
     const firebaseConfig = {
@@ -170,7 +171,7 @@
       extra.style.color = '#aaa';
 
       const end = new Date(rec.endTime);
-      let interval = null;
+      let notified = false;
 
       function update() {
         const now = new Date();
@@ -189,12 +190,17 @@
           const s = Math.floor((passed % 60000) / 1000);
           text = '⏰ Время истекло!';
           extra.textContent = `Прошло: ${h}ч ${m}м ${s}с`;
+
+          if (!notified) {
+            sendTelegramMessage(`⏰ Аренда завершена:\n${rec.name} (${rec.phone})`);
+            notified = true;
+          }
         }
         countdown.textContent = text;
       }
 
       update();
-      interval = setInterval(update, 1000);
+      const interval = setInterval(update, 1000);
 
       const delBtn = document.createElement('button');
       delBtn.className = 'delete-btn';
