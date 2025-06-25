@@ -68,9 +68,7 @@
     <div id="records"></div>
   </div>
   <script>
-    const TELEGRAM_BOT_TOKEN = 'ВАШ_ТОКЕН';
-    const TELEGRAM_CHAT_ID = 'ВАШ_CHAT_ID';
-
+    
     const firebaseConfig = {
       apiKey: "AIzaSyDr1zshWL8pZBDLvfQUmxLBk0UES0V49Zw",
       authDomain: "prokat-68146.firebaseapp.com",
@@ -82,13 +80,7 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    function sendTelegramMessage(text) {
-      fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text })
-      });
-    }
+        }
 
     function addRecord() {
   const name = document.getElementById('name').value.trim();
@@ -177,8 +169,7 @@ function loadRecords() {
             extra.textContent = `Задержка: ${h}ч ${m}м ${s}с`;
 
             if (!rec.notified) {
-              sendTelegramMessage(`⏰ Аренда завершена:
-${rec.name} (${rec.phone})`);
+              db.collection("arenda").doc(id).update({ notified: true });
               db.collection("arenda").doc(id).update({ notified: true });
             }
           } else {
