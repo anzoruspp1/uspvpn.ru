@@ -90,21 +90,36 @@
     }
 
     function addRecord() {
-      const name = document.getElementById('name').value.trim();
-      const phone = document.getElementById('phone').value.trim();
-      const hours = parseInt(document.getElementById('hours').value);
-      if (!name || !phone || !hours || hours <= 0) {
-        alert('Пожалуйста, заполните все поля.'); return;
-      }
-      const duration = hours * 3600000;
-      db.collection("arenda").add({
-        name, phone,
-        duration,
-        remainingTime: duration,
-        startTime: null,
-        isPaused: true,
-        notified: false
-      });
+  const name = document.getElementById('name').value.trim();
+  const phone = document.getElementById('phone').value.trim();
+  const hours = parseInt(document.getElementById('hours').value);
+
+  if (!name || !phone || !hours || hours <= 0) {
+    alert('Пожалуйста, заполните все поля.');
+    return;
+  }
+
+  const duration = hours * 3600000;
+
+  db.collection("arenda").add({
+    name,
+    phone,
+    duration,
+    remainingTime: duration,
+    startTime: null,
+    isPaused: true,
+    notified: false
+  })
+  .then(() => {
+    console.log("Запись успешно добавлена в Firestore.");
+    document.getElementById('name').value = '';
+    document.getElementById('phone').value = '';
+    document.getElementById('hours').value = '';
+  })
+  .catch((error) => {
+    console.error("Ошибка при добавлении записи:", error);
+    alert("Произошла ошибка при сохранении. Проверьте консоль.");
+  });
       document.getElementById('name').value = '';
       document.getElementById('phone').value = '';
       document.getElementById('hours').value = '';
