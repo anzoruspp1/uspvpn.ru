@@ -81,6 +81,7 @@
     const db = firebase.firestore();
 
     function addRecord() {
+  window.addRecord = addRecord;
   const name = document.getElementById('name').value.trim();
   const phone = document.getElementById('phone').value.trim();
   const hours = parseInt(document.getElementById('hours').value) || 0;
@@ -150,7 +151,13 @@ function loadRecords() {
       let interval;
       function updateTimer() {
         const now = Date.now();
- else if (!rec.isPaused) {
+        if (!rec.startTime) {
+          timer.textContent = '⏹ Не запущено';
+          extra.textContent = '';
+          return;
+        }
+
+        if (!rec.isPaused) {
           const passed = now - rec.startTime;
           const left = rec.duration - passed;
 
@@ -161,6 +168,27 @@ function loadRecords() {
             const s = Math.floor((overtime % 60000) / 1000);
             timer.textContent = '⏰ Время истекло!';
             extra.textContent = `Задержка: ${h}ч ${m}м ${s}с`;
+
+            if (!rec.notified) {
+              db.collection("arenda").doc(id).update({ notified: true });
+              rec.notified = true;
+            }
+          } else {
+            const h = Math.floor(left / 3600000);
+            const m = Math.floor((left % 3600000) / 60000);
+            const s = Math.floor((left % 60000) / 1000);
+            timer.textContent = `⏳ Осталось: ${h}ч ${m}м ${s}с`;
+            extra.textContent = '';
+          }
+        } else {
+          const remaining = rec.duration;
+          const h = Math.floor(remaining / 3600000);
+          const m = Math.floor((remaining % 3600000) / 60000);
+          const s = Math.floor((remaining % 60000) / 1000);
+          timer.textContent = `⏸ Приостановлено: ${h}ч ${m}м ${s}с`;
+          extra.textContent = '';
+        }
+      }ч ${m}м ${s}с`;
 
             if (!rec.notified) {
               db.collection("arenda").doc(id).update({ notified: true });
