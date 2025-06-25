@@ -4,8 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Аренда Мото</title>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  
   <style>
     body {
       background-color: #121212;
@@ -69,16 +68,8 @@
   </div>
   <script>
     
-    const firebaseConfig = {
-      apiKey: "AIzaSyDr1zshWL8pZBDLvfQUmxLBk0UES0V49Zw",
-      authDomain: "prokat-68146.firebaseapp.com",
-      projectId: "prokat-68146",
-      storageBucket: "prokat-68146.appspot.com",
-      messagingSenderId: "1028277394548",
-      appId: "1:1028277394548:web:d7704462963048b6134521"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+    // Firebase удалён — подключение к другой базе будет здесь
+// Пример: подключение к локальному хранилищу (localStorage) или API
 
     function addRecord() {
   
@@ -94,7 +85,7 @@
 
   const duration = (hours * 60 + minutes) * 60000;
 
-  db.collection("arenda").add({
+  saveRecord({
     name,
     phone,
     duration,
@@ -116,16 +107,11 @@
 }
 
 function loadRecords() {
-      db.collection("arenda").onSnapshot(snapshot => {
-        const container = document.getElementById('records');
-        container.innerHTML = '';
-        snapshot.forEach(doc => {
-  const data = doc.data();
-  data.startTime = data.startTime !== undefined && data.startTime !== null ? Number(data.startTime) : null;
-  createRecordElement(doc.id, data);
-});
-      });
-    }
+  const records = JSON.parse(localStorage.getItem('arenda') || '[]');
+  const container = document.getElementById('records');
+  container.innerHTML = '';
+  records.forEach((rec, index) => createRecordElement(index.toString(), rec));
+}
 
     function createRecordElement(id, rec) {
       const div = document.createElement('div');
@@ -146,7 +132,7 @@ function loadRecords() {
       const deleteBtn = document.createElement('button');
 
       deleteBtn.textContent = 'Удалить';
-      deleteBtn.onclick = () => db.collection("arenda").doc(id).delete();
+      deleteBtn.onclick = () => deleteRecord(id);
 
       let interval;
       function updateTimer() {
@@ -170,7 +156,7 @@ function loadRecords() {
             extra.textContent = `Задержка: ${h}ч ${m}м ${s}с`;
 
             if (!rec.notified) {
-              db.collection("arenda").doc(id).update({ notified: true });
+              markAsNotified(id)
               rec.notified = true;
             }
           } else {
@@ -195,18 +181,11 @@ function loadRecords() {
       startStopBtn.onclick = () => {
         const now = Date.now();
         if (rec.isPaused) {
-          db.collection("arenda").doc(id).update({
-            startTime: now,
-            isPaused: false
-          });
+          resumeRecord(id, now)
         } else {
           const passed = now - rec.startTime;
           const remaining = Math.max(0, rec.duration - passed);
-          db.collection("arenda").doc(id).update({
-            isPaused: true,
-            duration: remaining,
-            startTime: null
-          });
+          pauseRecord(id, remaining)
         }
       };
 
@@ -223,7 +202,44 @@ function loadRecords() {
     }
 
     loadRecords();
-  window.addRecord = addRecord;
+  function saveRecord(record) {
+  const records = JSON.parse(localStorage.getItem('arenda') || '[]');
+  records.push(record);
+  localStorage.setItem('arenda', JSON.stringify(records));
+  loadRecords();
+}
+
+function deleteRecord(id) {
+  const records = JSON.parse(localStorage.getItem('arenda') || '[]');
+  records.splice(parseInt(id), 1);
+  localStorage.setItem('arenda', JSON.stringify(records));
+  loadRecords();
+}
+
+function markAsNotified(id) {
+  const records = JSON.parse(localStorage.getItem('arenda') || '[]');
+  records[parseInt(id)].notified = true;
+  localStorage.setItem('arenda', JSON.stringify(records));
+}
+
+function resumeRecord(id, now) {
+  const records = JSON.parse(localStorage.getItem('arenda') || '[]');
+  records[parseInt(id)].startTime = now;
+  records[parseInt(id)].isPaused = false;
+  localStorage.setItem('arenda', JSON.stringify(records));
+  loadRecords();
+}
+
+function pauseRecord(id, remaining) {
+  const records = JSON.parse(localStorage.getItem('arenda') || '[]');
+  records[parseInt(id)].duration = remaining;
+  records[parseInt(id)].isPaused = true;
+  records[parseInt(id)].startTime = null;
+  localStorage.setItem('arenda', JSON.stringify(records));
+  loadRecords();
+}
+
+window.addRecord = addRecord;
 </script>
 </body>
 </html>
