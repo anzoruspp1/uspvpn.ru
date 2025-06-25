@@ -4,8 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Аренда Мото</title>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js">window.addRecord = addRecord;
-  </script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <style>
     body {
@@ -182,38 +181,9 @@ function loadRecords() {
             extra.textContent = '';
           }
         } else {
-          const remaining = rec.duration;
-          const h = Math.floor(remaining / 3600000);
-          const m = Math.floor((remaining % 3600000) / 60000);
-          const s = Math.floor((remaining % 60000) / 1000);
-          timer.textContent = `⏸ Приостановлено: ${h}ч ${m}м ${s}с`;
-          extra.textContent = '';
-        }
-      }
-
-            if (!rec.notified) {
-              db.collection("arenda").doc(id).update({ notified: true });
-            }
-          } else {
-            const h = Math.floor(left / 3600000);
-            const m = Math.floor((left % 3600000) / 60000);
-            const s = Math.floor((left % 60000) / 1000);
-            timer.textContent = `⏳ Осталось: ${h}ч ${m}м ${s}с`;
-            extra.textContent = '';
-          }
-        } else {
-          const remaining = rec.duration;
-          const h = Math.floor(remaining / 3600000);
-          const m = Math.floor((remaining % 3600000) / 60000);
-          const s = Math.floor((remaining % 60000) / 1000);
-          timer.textContent = `⏸ Приостановлено: ${h}ч ${m}м ${s}с`;
-          extra.textContent = '';
-          }
-        } else {
-          const remaining = rec.duration;
-          const h = Math.floor(remaining / 3600000);
-          const m = Math.floor((remaining % 3600000) / 60000);
-          const s = Math.floor((remaining % 60000) / 1000);
+          const h = Math.floor(rec.duration / 3600000);
+          const m = Math.floor((rec.duration % 3600000) / 60000);
+          const s = Math.floor((rec.duration % 60000) / 1000);
           timer.textContent = `⏸ Приостановлено: ${h}ч ${m}м ${s}с`;
           extra.textContent = '';
         }
@@ -253,6 +223,7 @@ function loadRecords() {
     }
 
     loadRecords();
-  </script>
+  window.addRecord = addRecord;
+</script>
 </body>
 </html>
