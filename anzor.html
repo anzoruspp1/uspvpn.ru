@@ -106,20 +106,7 @@ async function addRecord() {
   }
 }
 
-  const duration = (hours * 60 + minutes) * 60000;
-
-  saveRecord({
-    name,
-    phone,
-    duration,
-    starttime: Date.now(),
-    ispaused: false,
-    notified: false
-  })  // оставляем без изменений, так как имя уже соответствует
-    }
-  ]
-}: false
-  })
+  
   .then(() => {
     console.log("Запись успешно добавлена в Supabase.");
     document.getElementById('name').value = '';
