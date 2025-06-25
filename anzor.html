@@ -107,7 +107,6 @@
     name,
     phone,
     duration,
-    remainingTime: duration,
     startTime: Date.now(),
     isPaused: false,
     notified: false
@@ -164,7 +163,7 @@ function loadRecords() {
         const now = Date.now();
         if (!rec.isPaused && rec.startTime) {
           const passed = now - rec.startTime;
-          const left = rec.remainingTime - passed;
+          const left = rec.duration - passed;
 
           if (left <= 0) {
             const overtime = -left;
@@ -186,9 +185,10 @@ function loadRecords() {
             extra.textContent = '';
           }
         } else {
-          const h = Math.floor(rec.remainingTime / 3600000);
-          const m = Math.floor((rec.remainingTime % 3600000) / 60000);
-          const s = Math.floor((rec.remainingTime % 60000) / 1000);
+          const remaining = rec.duration;
+          const h = Math.floor(remaining / 3600000);
+          const m = Math.floor((remaining % 3600000) / 60000);
+          const s = Math.floor((remaining % 60000) / 1000);
           timer.textContent = `⏸ Приостановлено: ${h}ч ${m}м ${s}с`;
           extra.textContent = '';
         }
@@ -207,10 +207,10 @@ function loadRecords() {
           });
         } else {
           const passed = now - rec.startTime;
-          const remaining = Math.max(0, rec.remainingTime - passed);
+          const remaining = Math.max(0, rec.duration - passed);
           db.collection("arenda").doc(id).update({
             isPaused: true,
-            remainingTime: remaining,
+            duration: remaining,
             startTime: null
           });
         }
