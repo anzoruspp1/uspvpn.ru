@@ -91,9 +91,12 @@ async function addRecord() {
     name,
     phone,
     duration,
-    startTime: Date.now(),
-    isPaused: false,
-    notified: false
+    starttime: Date.now(),
+    ispaused: false,
+    notified"  // оставляем без изменений, так как имя уже соответствует
+    }
+  ]
+}: false
   })
   .then(() => {
     console.log("Запись успешно добавлена в Supabase.");
@@ -109,7 +112,7 @@ async function addRecord() {
 }
 
 async function loadRecords() {
-  const { data, error } = await supabase.from('arenda').select('*').order('startTime', { ascending: false });
+  const { data, error } = await supabase.from('arenda').select('*').order('starttime', { ascending: false });
   const container = document.getElementById('records');
   container.innerHTML = '';
   if (error) {
@@ -225,8 +228,7 @@ async function markAsNotified(id) {
 }
 
 async function resumeRecord(id, now) {
-  const { error } = await supabase.from('arenda').update({
-    startTime: now,
+  const { error } = await supabase.from('arenda').update({ starttime: now,
     isPaused: false
   }).eq('id', id);
   if (error) throw error;
@@ -234,10 +236,7 @@ async function resumeRecord(id, now) {
 }
 
 async function pauseRecord(id, remaining) {
-  const { error } = await supabase.from('arenda').update({
-    duration: remaining,
-    isPaused: true,
-    startTime: null
+  const { error } = await supabase.from('arenda').update({ duration: remaining, isPaused: true, starttime: null
   }).eq('id', id);
   if (error) throw error;
   loadRecords();
