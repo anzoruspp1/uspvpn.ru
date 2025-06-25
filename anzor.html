@@ -186,7 +186,7 @@ async function loadRecords() {
         if (rec.ispaused) {
           resumeRecord(id, now)
         } else {
-          const passed = now - rec.startTime;
+          const passed = now - rec.starttime;
           const remaining = Math.max(0, rec.duration - passed);
           pauseRecord(id, remaining)
         }
@@ -224,14 +224,14 @@ async function markAsNotified(id) {
 
 async function resumeRecord(id, now) {
   const { error } = await supabase.from('arenda').update({ starttime: now,
-    isPaused: false
+    ispaused: false
   }).eq('id', id);
   if (error) throw error;
   loadRecords();
 }
 
 async function pauseRecord(id, remaining) {
-  const { error } = await supabase.from('arenda').update({ duration: remaining, isPaused: true, starttime: null
+  const { error } = await supabase.from('arenda').update({ duration: remaining, ispaused: true, starttime: null
   }).eq('id', id);
   if (error) throw error;
   loadRecords();
