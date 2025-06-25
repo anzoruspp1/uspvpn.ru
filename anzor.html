@@ -74,7 +74,6 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function addRecord() {
-  
   const name = document.getElementById('name').value.trim();
   const phone = document.getElementById('phone').value.trim();
   const hours = parseInt(document.getElementById('hours').value) || 0;
@@ -84,6 +83,28 @@ async function addRecord() {
     alert('Пожалуйста, заполните все поля.');
     return;
   }
+
+  const duration = (hours * 60 + minutes) * 60000;
+
+  try {
+    await saveRecord({
+      name,
+      phone,
+      duration,
+      starttime: Date.now(),
+      ispaused: false,
+      notified: false
+    });
+    console.log("Запись успешно добавлена в Supabase.");
+    document.getElementById('name').value = '';
+    document.getElementById('phone').value = '';
+    document.getElementById('hours').value = '';
+    document.getElementById('minutes').value = '';
+  } catch (error) {
+    console.error("Ошибка при добавлении записи:", error);
+    alert("Произошла ошибка при сохранении. Проверьте консоль.");
+  }
+}
 
   const duration = (hours * 60 + minutes) * 60000;
 
