@@ -131,7 +131,7 @@ function loadRecords() {
         container.innerHTML = '';
         snapshot.forEach(doc => {
   const data = doc.data();
-  data.startTime = data.startTime ? Number(data.startTime) : null;
+  data.startTime = data.startTime !== undefined && data.startTime !== null ? Number(data.startTime) : null;
   createRecordElement(doc.id, data);
 });
       });
@@ -194,6 +194,8 @@ function loadRecords() {
       }
 
       startStopBtn.textContent = rec.isPaused ? '▶️ Старт' : '⏸ Стоп';
+      updateTimer();
+      interval = setInterval(updateTimer, 1000);
       startStopBtn.onclick = () => {
         const now = Date.now();
         if (rec.isPaused) {
