@@ -66,12 +66,14 @@
     <button onclick="addRecord()">💾 Сохранить</button>
     <div id="records"></div>
   </div>
-  <script>
-    
-    // Firebase удалён — подключение к другой базе будет здесь
-// Пример: подключение к локальному хранилищу (localStorage) или API
+  <script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    function addRecord() {
+const supabaseUrl = 'https://piewqrljovgbjdrcvbup.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBpZXdxcmxqb3ZnYmpkcmN2YnVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4NjYxNDYsImV4cCI6MjA2NjQ0MjE0Nn0.NCOpvuQG9XTiUAQLxup9Ftiy3n9_xTz__glSzUn383I';
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+async function addRecord() {
   
   const name = document.getElementById('name').value.trim();
   const phone = document.getElementById('phone').value.trim();
@@ -94,7 +96,7 @@
     notified: false
   })
   .then(() => {
-    console.log("Запись успешно добавлена в Firestore.");
+    console.log("Запись успешно добавлена в Supabase.");
     document.getElementById('name').value = '';
     document.getElementById('phone').value = '';
     document.getElementById('hours').value = '';
@@ -106,11 +108,15 @@
   });
 }
 
-function loadRecords() {
-  const records = JSON.parse(localStorage.getItem('arenda') || '[]');
+async function loadRecords() {
+  const { data, error } = await supabase.from('arenda').select('*').order('startTime', { ascending: false });
   const container = document.getElementById('records');
   container.innerHTML = '';
-  records.forEach((rec, index) => createRecordElement(index.toString(), rec));
+  if (error) {
+    console.error('Ошибка загрузки данных:', error);
+    return;
+  }
+  data.forEach((rec) => createRecordElement(rec.id, rec));
 }
 
     function createRecordElement(id, rec) {
@@ -176,7 +182,6 @@ function loadRecords() {
       }
 
       startStopBtn.textContent = rec.isPaused ? '▶️ Старт' : '⏸ Стоп';
-      updateTimer();
       interval = setInterval(updateTimer, 1000);
       startStopBtn.onclick = () => {
         const now = Date.now();
@@ -202,40 +207,39 @@ function loadRecords() {
     }
 
     loadRecords();
-  function saveRecord(record) {
-  const records = JSON.parse(localStorage.getItem('arenda') || '[]');
-  records.push(record);
-  localStorage.setItem('arenda', JSON.stringify(records));
+  async function saveRecord(record) {
+  const { error } = await supabase.from('arenda').insert([record]);
+  if (error) throw error;
   loadRecords();
 }
 
-function deleteRecord(id) {
-  const records = JSON.parse(localStorage.getItem('arenda') || '[]');
-  records.splice(parseInt(id), 1);
-  localStorage.setItem('arenda', JSON.stringify(records));
+async function deleteRecord(id) {
+  const { error } = await supabase.from('arenda').delete().eq('id', id);
+  if (error) throw error;
   loadRecords();
 }
 
-function markAsNotified(id) {
-  const records = JSON.parse(localStorage.getItem('arenda') || '[]');
-  records[parseInt(id)].notified = true;
-  localStorage.setItem('arenda', JSON.stringify(records));
+async function markAsNotified(id) {
+  const { error } = await supabase.from('arenda').update({ notified: true }).eq('id', id);
+  if (error) throw error;
 }
 
-function resumeRecord(id, now) {
-  const records = JSON.parse(localStorage.getItem('arenda') || '[]');
-  records[parseInt(id)].startTime = now;
-  records[parseInt(id)].isPaused = false;
-  localStorage.setItem('arenda', JSON.stringify(records));
+async function resumeRecord(id, now) {
+  const { error } = await supabase.from('arenda').update({
+    startTime: now,
+    isPaused: false
+  }).eq('id', id);
+  if (error) throw error;
   loadRecords();
 }
 
-function pauseRecord(id, remaining) {
-  const records = JSON.parse(localStorage.getItem('arenda') || '[]');
-  records[parseInt(id)].duration = remaining;
-  records[parseInt(id)].isPaused = true;
-  records[parseInt(id)].startTime = null;
-  localStorage.setItem('arenda', JSON.stringify(records));
+async function pauseRecord(id, remaining) {
+  const { error } = await supabase.from('arenda').update({
+    duration: remaining,
+    isPaused: true,
+    startTime: null
+  }).eq('id', id);
+  if (error) throw error;
   loadRecords();
 }
 
