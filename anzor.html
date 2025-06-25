@@ -80,8 +80,6 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-        }
-
     function addRecord() {
   const name = document.getElementById('name').value.trim();
   const phone = document.getElementById('phone').value.trim();
@@ -151,12 +149,8 @@ function loadRecords() {
 
       let interval;
       function updateTimer() {
-        if (!rec.startTime) return;
         const now = Date.now();
-        if (!rec.startTime) {
-          timer.textContent = '⏹ Не запущено';
-          extra.textContent = '';
-        } else if (!rec.isPaused) {
+ else if (!rec.isPaused) {
           const passed = now - rec.startTime;
           const left = rec.duration - passed;
 
@@ -169,7 +163,6 @@ function loadRecords() {
             extra.textContent = `Задержка: ${h}ч ${m}м ${s}с`;
 
             if (!rec.notified) {
-              db.collection("arenda").doc(id).update({ notified: true });
               db.collection("arenda").doc(id).update({ notified: true });
             }
           } else {
