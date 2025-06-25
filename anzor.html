@@ -108,8 +108,8 @@
     phone,
     duration,
     remainingTime: duration,
-    startTime: null,
-    isPaused: true,
+    startTime: Date.now(),
+    isPaused: false,
     notified: false
   })
   .then(() => {
@@ -194,6 +194,7 @@ function loadRecords() {
       }
 
       startStopBtn.textContent = rec.isPaused ? '▶️ Старт' : '⏸ Стоп';
+      if (interval) clearInterval(interval);
       updateTimer();
       interval = setInterval(updateTimer, 1000);
       startStopBtn.onclick = () => {
