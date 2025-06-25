@@ -106,10 +106,6 @@ async function addRecord() {
   }
 }
 
-  
-  
-}
-
 async function loadRecords() {
   const { data, error } = await supabase.from('arenda').select('*').order('starttime', { ascending: false });
   const container = document.getElementById('records');
@@ -152,7 +148,7 @@ async function loadRecords() {
         }
 
         if (!rec.ispaused) {
-          const passed = now - rec.startTime;
+          const passed = now - rec.starttime;
           const left = rec.duration - passed;
 
           if (left <= 0) {
@@ -183,11 +179,11 @@ async function loadRecords() {
         }
       }
 
-      startStopBtn.textContent = rec.isPaused ? '▶️ Старт' : '⏸ Стоп';
+      startStopBtn.textContent = rec.ispaused ? '▶️ Старт' : '⏸ Стоп';
       interval = setInterval(updateTimer, 1000);
       startStopBtn.onclick = () => {
         const now = Date.now();
-        if (rec.isPaused) {
+        if (rec.ispaused) {
           resumeRecord(id, now)
         } else {
           const passed = now - rec.startTime;
