@@ -4,11 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Аренда Мото</title>
-
-  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-
   <style>
     body {
       background-color: #121212;
@@ -20,141 +17,123 @@
       flex-direction: column;
       align-items: center;
     }
-
-    .container {
-      width: 100%;
-      max-width: 480px;
-    }
-
+    .container { max-width: 480px; width: 100%; }
     input, button {
-      display: block;
       margin: 10px 0;
       padding: 14px;
       width: 100%;
       border: none;
       border-radius: 6px;
       font-size: 16px;
-      box-sizing: border-box;
     }
-
-    input {
-      background-color: #1e1e1e;
-      color: #fff;
-    }
-
-    input::placeholder {
-      color: #bbb;
-    }
-
+    input { background-color: #1e1e1e; color: #fff; }
+    input::placeholder { color: #bbb; }
     button {
       background: linear-gradient(135deg, #00c6ff, #0072ff);
       color: white;
       font-weight: bold;
       cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
     }
-
-    button:hover {
-      transform: scale(1.02);
-      box-shadow: 0 4px 10px rgba(0, 114, 255, 0.4);
-    }
-
     .record {
       border: 1px solid #333;
       margin-top: 12px;
       padding: 14px;
       background-color: #1e1e1e;
       border-radius: 6px;
-      width: 100%;
-      box-sizing: border-box;
     }
-
     .record-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
-
-    .delete-btn {
-      background-color: #e53935;
-      color: white;
-      border: none;
-      padding: 5px 10px;
-      border-radius: 4px;
+    .record-buttons button {
+      margin-right: 8px;
+      padding: 6px 12px;
       font-size: 14px;
-      cursor: pointer;
     }
-
-    .delete-btn:hover {
-      background-color: #d32f2f;
+    .extra-info {
+      font-size: 14px;
+      color: #aaa;
     }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>🏍 Аренда Мото</h1>
-
     <input type="text" id="name" placeholder="Имя арендатора">
     <input type="text" id="phone" placeholder="Телефон">
-    <input type="number" id="hours" placeholder="Часов аренды" min="1">
+    <input type="number" id="hours" placeholder="Часы аренды" min="0">
+<input type="number" id="minutes" placeholder="Минуты аренды" min="0" max="59">
     <button onclick="addRecord()">💾 Сохранить</button>
-
     <div id="records"></div>
   </div>
-
   <script>
-    // 🔐 ВСТАВЬ СЮДА СВОИ ДАННЫЕ от Telegram Bot
-    const TELEGRAM_BOT_TOKEN = '8162814522:AAHwpKtPXnQUPlCUG1TFJuvAVtn0LzfxvR4';
-    const TELEGRAM_CHAT_ID = '7319588305';
-
-    function sendTelegramMessage(text) {
-      fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          chat_id: TELEGRAM_CHAT_ID,
-          text: text
-        })
-      }).catch(err => console.error('Ошибка отправки в Telegram:', err));
-    }
+    const TELEGRAM_BOT_TOKEN = 'ВАШ_ТОКЕН';
+    const TELEGRAM_CHAT_ID = 'ВАШ_CHAT_ID';
 
     const firebaseConfig = {
       apiKey: "AIzaSyDr1zshWL8pZBDLvfQUmxLBk0UES0V49Zw",
       authDomain: "prokat-68146.firebaseapp.com",
       projectId: "prokat-68146",
-      storageBucket: "prokat-68146.firebasestorage.app",
+      storageBucket: "prokat-68146.appspot.com",
       messagingSenderId: "1028277394548",
       appId: "1:1028277394548:web:d7704462963048b6134521"
     };
-
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    function addRecord() {
-      const name = document.getElementById('name').value.trim();
-      const phone = document.getElementById('phone').value.trim();
-      const hours = parseInt(document.getElementById('hours').value);
-      if (!name || !phone || !hours || hours <= 0) {
-        alert('Пожалуйста, заполните все поля.');
-        return;
-      }
-      const endTime = new Date(Date.now() + hours * 3600 * 1000).toISOString();
-      db.collection("arenda").add({ name, phone, endTime });
-      document.getElementById('name').value = '';
-      document.getElementById('phone').value = '';
-      document.getElementById('hours').value = '';
-    }
-
-    function loadRecords() {
-      db.collection("arenda").onSnapshot(snap => {
-        const container = document.getElementById('records');
-        container.innerHTML = '';
-        snap.forEach(doc => createRecordElement(doc.id, doc.data()));
+    function sendTelegramMessage(text) {
+      fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text })
       });
     }
 
-    function deleteRecord(id) {
-      db.collection("arenda").doc(id).delete();
+    function addRecord() {
+  const name = document.getElementById('name').value.trim();
+  const phone = document.getElementById('phone').value.trim();
+  const hours = parseInt(document.getElementById('hours').value) || 0;
+  const minutes = parseInt(document.getElementById('minutes').value) || 0;
+
+  if (!name || !phone || (hours === 0 && minutes === 0)) {
+    alert('Пожалуйста, заполните все поля.');
+    return;
+  }
+
+  const duration = (hours * 60 + minutes) * 60000;
+
+  db.collection("arenda").add({
+    name,
+    phone,
+    duration,
+    startTime: Date.now(),
+    isPaused: false,
+    notified: false
+  })
+  .then(() => {
+    console.log("Запись успешно добавлена в Firestore.");
+    document.getElementById('name').value = '';
+    document.getElementById('phone').value = '';
+    document.getElementById('hours').value = '';
+    document.getElementById('minutes').value = '';
+  })
+  .catch((error) => {
+    console.error("Ошибка при добавлении записи:", error);
+    alert("Произошла ошибка при сохранении. Проверьте консоль.");
+  });
+}
+
+function loadRecords() {
+      db.collection("arenda").onSnapshot(snapshot => {
+        const container = document.getElementById('records');
+        container.innerHTML = '';
+        snapshot.forEach(doc => {
+  const data = doc.data();
+  data.startTime = data.startTime !== undefined && data.startTime !== null ? Number(data.startTime) : null;
+  createRecordElement(doc.id, data);
+});
+      });
     }
 
     function createRecordElement(id, rec) {
@@ -165,55 +144,100 @@
       header.className = 'record-header';
       header.innerHTML = `<strong>${rec.name}</strong><span>📞 ${rec.phone}</span>`;
 
-      const countdown = document.createElement('p');
+      const timer = document.createElement('p');
       const extra = document.createElement('p');
-      extra.style.fontSize = '14px';
-      extra.style.color = '#aaa';
+      extra.className = 'extra-info';
 
-      const end = new Date(rec.endTime);
-      let notified = false;
+      const buttons = document.createElement('div');
+      buttons.className = 'record-buttons';
 
-      function update() {
-        const now = new Date();
-        const diff = end - now;
-        let text = '';
-        if (diff >= 0) {
-          const h = Math.floor(diff / 3600000);
-          const m = Math.floor((diff % 3600000) / 60000);
-          const s = Math.floor((diff % 60000) / 1000);
-          text = `⏳ Останется: ${h}ч ${m}м ${s}с`;
+      const startStopBtn = document.createElement('button');
+      const deleteBtn = document.createElement('button');
+
+      deleteBtn.textContent = 'Удалить';
+      deleteBtn.onclick = () => db.collection("arenda").doc(id).delete();
+
+      let interval;
+      function updateTimer() {
+        if (!rec.startTime) return;
+        const now = Date.now();
+        if (!rec.startTime) {
+          timer.textContent = '⏹ Не запущено';
           extra.textContent = '';
-        } else {
-          const passed = -diff;
-          const h = Math.floor(passed / 3600000);
-          const m = Math.floor((passed % 3600000) / 60000);
-          const s = Math.floor((passed % 60000) / 1000);
-          text = '⏰ Время истекло!';
-          extra.textContent = `Прошло: ${h}ч ${m}м ${s}с`;
+        } else if (!rec.isPaused) {
+          const passed = now - rec.startTime;
+          const left = rec.duration - passed;
 
-          if (!notified) {
-            sendTelegramMessage(`⏰ Аренда завершена:\n${rec.name} (${rec.phone})`);
-            notified = true;
+          if (left <= 0) {
+            const overtime = -left;
+            const h = Math.floor(overtime / 3600000);
+            const m = Math.floor((overtime % 3600000) / 60000);
+            const s = Math.floor((overtime % 60000) / 1000);
+            timer.textContent = '⏰ Время истекло!';
+            extra.textContent = `Задержка: ${h}ч ${m}м ${s}с`;
+
+            if (!rec.notified) {
+              sendTelegramMessage(`⏰ Аренда завершена:
+${rec.name} (${rec.phone})`);
+              db.collection("arenda").doc(id).update({ notified: true });
+            }
+          } else {
+            const h = Math.floor(left / 3600000);
+            const m = Math.floor((left % 3600000) / 60000);
+            const s = Math.floor((left % 60000) / 1000);
+            timer.textContent = `⏳ Осталось: ${h}ч ${m}м ${s}с`;
+            extra.textContent = '';
           }
+        } else {
+          const remaining = rec.duration;
+          const h = Math.floor(remaining / 3600000);
+          const m = Math.floor((remaining % 3600000) / 60000);
+          const s = Math.floor((remaining % 60000) / 1000);
+          timer.textContent = `⏸ Приостановлено: ${h}ч ${m}м ${s}с`;
+          extra.textContent = '';
+        }ч ${m}м ${s}с`;
+            extra.textContent = '';
+          }
+        } else {
+          const remaining = rec.duration;
+          const h = Math.floor(remaining / 3600000);
+          const m = Math.floor((remaining % 3600000) / 60000);
+          const s = Math.floor((remaining % 60000) / 1000);
+          timer.textContent = `⏸ Приостановлено: ${h}ч ${m}м ${s}с`;
+          extra.textContent = '';
         }
-        countdown.textContent = text;
       }
 
-      update();
-      const interval = setInterval(update, 1000);
-
-      const delBtn = document.createElement('button');
-      delBtn.className = 'delete-btn';
-      delBtn.textContent = 'Удалить';
-      delBtn.onclick = () => {
-        clearInterval(interval);
-        deleteRecord(id);
+      startStopBtn.textContent = rec.isPaused ? '▶️ Старт' : '⏸ Стоп';
+      updateTimer();
+      interval = setInterval(updateTimer, 1000);
+      startStopBtn.onclick = () => {
+        const now = Date.now();
+        if (rec.isPaused) {
+          db.collection("arenda").doc(id).update({
+            startTime: now,
+            isPaused: false
+          });
+        } else {
+          const passed = now - rec.startTime;
+          const remaining = Math.max(0, rec.duration - passed);
+          db.collection("arenda").doc(id).update({
+            isPaused: true,
+            duration: remaining,
+            startTime: null
+          });
+        }
       };
 
+      updateTimer();
+
+      buttons.appendChild(startStopBtn);
+      buttons.appendChild(deleteBtn);
+
       div.appendChild(header);
-      div.appendChild(countdown);
+      div.appendChild(timer);
       div.appendChild(extra);
-      div.appendChild(delBtn);
+      div.appendChild(buttons);
       document.getElementById('records').appendChild(div);
     }
 
