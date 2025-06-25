@@ -107,17 +107,7 @@ async function addRecord() {
 }
 
   
-  .then(() => {
-    console.log("Запись успешно добавлена в Supabase.");
-    document.getElementById('name').value = '';
-    document.getElementById('phone').value = '';
-    document.getElementById('hours').value = '';
-    document.getElementById('minutes').value = '';
-  })
-  .catch((error) => {
-    console.error("Ошибка при добавлении записи:", error);
-    alert("Произошла ошибка при сохранении. Проверьте консоль.");
-  });
+  
 }
 
 async function loadRecords() {
@@ -155,13 +145,13 @@ async function loadRecords() {
       let interval;
       function updateTimer() {
         const now = Date.now();
-        if (!rec.startTime) {
+        if (!rec.starttime) {
           timer.textContent = '⏹ Не запущено';
           extra.textContent = '';
           return;
         }
 
-        if (!rec.isPaused) {
+        if (!rec.ispaused) {
           const passed = now - rec.startTime;
           const left = rec.duration - passed;
 
