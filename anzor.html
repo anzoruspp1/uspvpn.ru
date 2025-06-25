@@ -115,29 +115,14 @@
     document.getElementById('name').value = '';
     document.getElementById('phone').value = '';
     document.getElementById('hours').value = '';
-  
-  
   })
   .catch((error) => {
     console.error("Ошибка при добавлении записи:", error);
     alert("Произошла ошибка при сохранении. Проверьте консоль.");
   });
-})
-  .catch((error) => {
-    console.error("Ошибка при добавлении записи:", error);
-    alert("Произошла ошибка при сохранении. Проверьте консоль.");
-  });
-  })
-  .catch((error) => {
-    console.error("Ошибка при добавлении записи:", error);
-    alert("Произошла ошибка при сохранении. Проверьте консоль.");
-  });
-      document.getElementById('name').value = '';
-      document.getElementById('phone').value = '';
-      document.getElementById('hours').value = '';
-    }
+}
 
-    function loadRecords() {
+function loadRecords() {
       db.collection("arenda").onSnapshot(snapshot => {
         const container = document.getElementById('records');
         container.innerHTML = '';
