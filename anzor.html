@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Аренда Мото</title>
-  
   <style>
     body {
       background-color: #121212;
@@ -61,11 +60,14 @@
     <h1>🏍 Аренда Мото</h1>
     <input type="text" id="name" placeholder="Имя арендатора">
     <input type="text" id="phone" placeholder="Телефон">
+    <input type="text" id="owner" placeholder="Имя владельца мотоцикла">
     <input type="number" id="hours" placeholder="Часы аренды" min="0">
-<input type="number" id="minutes" placeholder="Минуты аренды" min="0" max="59">
+    <input type="number" id="minutes" placeholder="Минуты аренды" min="0" max="59">
     <button onclick="addRecord()">💾 Сохранить</button>
+    <button onclick="showTodayRecords()">📅 Сегодня</button>
     <div id="records"></div>
   </div>
+
   <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
@@ -76,10 +78,11 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 async function addRecord() {
   const name = document.getElementById('name').value.trim();
   const phone = document.getElementById('phone').value.trim();
+  const owner = document.getElementById('owner').value.trim();
   const hours = parseInt(document.getElementById('hours').value) || 0;
   const minutes = parseInt(document.getElementById('minutes').value) || 0;
 
-  if (!name || !phone || (hours === 0 && minutes === 0)) {
+  if (!name || !phone || !owner || (hours === 0 && minutes === 0)) {
     alert('Пожалуйста, заполните все поля.');
     return;
   }
@@ -90,6 +93,7 @@ async function addRecord() {
     await saveRecord({
       name,
       phone,
+      owner,
       duration,
       starttime: null,
       ispaused: true,
@@ -98,6 +102,7 @@ async function addRecord() {
     console.log("Запись успешно добавлена в Supabase.");
     document.getElementById('name').value = '';
     document.getElementById('phone').value = '';
+    document.getElementById('owner').value = '';
     document.getElementById('hours').value = '';
     document.getElementById('minutes').value = '';
   } catch (error) {
@@ -117,95 +122,99 @@ async function loadRecords() {
   data.forEach((rec) => createRecordElement(rec.id, rec));
 }
 
-    function createRecordElement(id, rec) {
-      const div = document.createElement('div');
-      div.className = 'record';
+function createRecordElement(id, rec) {
+  const div = document.createElement('div');
+  div.className = 'record';
 
-      const header = document.createElement('div');
-      header.className = 'record-header';
-      header.innerHTML = `<strong>${rec.name}</strong><span>📞 ${rec.phone}</span>`;
+  const header = document.createElement('div');
+  header.className = 'record-header';
+  header.innerHTML = `<strong>${rec.name}</strong><span>📞 ${rec.phone}</span>`;
 
-      const timer = document.createElement('p');
-      const extra = document.createElement('p');
-      extra.className = 'extra-info';
+  const ownerInfo = document.createElement('p');
+  ownerInfo.className = 'extra-info';
+  ownerInfo.textContent = `Владелец: ${rec.owner || 'не указано'}`;
 
-      const buttons = document.createElement('div');
-      buttons.className = 'record-buttons';
+  const timer = document.createElement('p');
+  const extra = document.createElement('p');
+  extra.className = 'extra-info';
 
-      const startStopBtn = document.createElement('button');
-      const deleteBtn = document.createElement('button');
+  const buttons = document.createElement('div');
+  buttons.className = 'record-buttons';
 
-      deleteBtn.textContent = 'Удалить';
-      deleteBtn.onclick = () => deleteRecord(id);
+  const startStopBtn = document.createElement('button');
+  const deleteBtn = document.createElement('button');
 
-      let interval;
-      function updateTimer() {
-        const now = Date.now();
-        if (!rec.starttime) {
-          timer.textContent = '⏹ Не запущено';
-          extra.textContent = '';
-          return;
-        }
+  deleteBtn.textContent = 'Удалить';
+  deleteBtn.onclick = () => deleteRecord(id);
 
-        if (!rec.ispaused) {
-          const passed = now - rec.starttime;
-          const left = rec.duration - passed;
-
-          if (left <= 0) {
-            const overtime = -left;
-            const h = Math.floor(overtime / 3600000);
-            const m = Math.floor((overtime % 3600000) / 60000);
-            const s = Math.floor((overtime % 60000) / 1000);
-            timer.textContent = '⏰ Время истекло!';
-            extra.textContent = `Задержка: ${h}ч ${m}м ${s}с`;
-
-            if (!rec.notified) {
-              markAsNotified(id)
-              rec.notified = true;
-            }
-          } else {
-            const h = Math.floor(left / 3600000);
-            const m = Math.floor((left % 3600000) / 60000);
-            const s = Math.floor((left % 60000) / 1000);
-            timer.textContent = `⏳ Осталось: ${h}ч ${m}м ${s}с`;
-            extra.textContent = '';
-          }
-        } else {
-          const h = Math.floor(rec.duration / 3600000);
-          const m = Math.floor((rec.duration % 3600000) / 60000);
-          const s = Math.floor((rec.duration % 60000) / 1000);
-          timer.textContent = `⏸ Приостановлено: ${h}ч ${m}м ${s}с`;
-          extra.textContent = '';
-        }
-      }
-
-      startStopBtn.textContent = rec.ispaused ? '▶️ Старт' : '⏸ Стоп';
-      interval = setInterval(updateTimer, 1000);
-      startStopBtn.onclick = () => {
-        const now = Date.now();
-        if (rec.ispaused) {
-          resumeRecord(id, now)
-        } else {
-          const passed = now - rec.starttime;
-          const remaining = Math.max(0, rec.duration - passed);
-          pauseRecord(id, remaining)
-        }
-      };
-
-      updateTimer();
-
-      buttons.appendChild(startStopBtn);
-      buttons.appendChild(deleteBtn);
-
-      div.appendChild(header);
-      div.appendChild(timer);
-      div.appendChild(extra);
-      div.appendChild(buttons);
-      document.getElementById('records').appendChild(div);
+  let interval;
+  function updateTimer() {
+    const now = Date.now();
+    if (!rec.starttime) {
+      timer.textContent = '⏹ Не запущено';
+      extra.textContent = '';
+      return;
     }
 
-    loadRecords();
-  async function saveRecord(record) {
+    if (!rec.ispaused) {
+      const passed = now - rec.starttime;
+      const left = rec.duration - passed;
+
+      if (left <= 0) {
+        const overtime = -left;
+        const h = Math.floor(overtime / 3600000);
+        const m = Math.floor((overtime % 3600000) / 60000);
+        const s = Math.floor((overtime % 60000) / 1000);
+        timer.textContent = '⏰ Время истекло!';
+        extra.textContent = `Задержка: ${h}ч ${m}м ${s}с`;
+
+        if (!rec.notified) {
+          markAsNotified(id)
+          rec.notified = true;
+        }
+      } else {
+        const h = Math.floor(left / 3600000);
+        const m = Math.floor((left % 3600000) / 60000);
+        const s = Math.floor((left % 60000) / 1000);
+        timer.textContent = `⏳ Осталось: ${h}ч ${m}м ${s}с`;
+        extra.textContent = '';
+      }
+    } else {
+      const h = Math.floor(rec.duration / 3600000);
+      const m = Math.floor((rec.duration % 3600000) / 60000);
+      const s = Math.floor((rec.duration % 60000) / 1000);
+      timer.textContent = `⏸ Приостановлено: ${h}ч ${m}м ${s}с`;
+      extra.textContent = '';
+    }
+  }
+
+  startStopBtn.textContent = rec.ispaused ? '▶️ Старт' : '⏸ Стоп';
+  interval = setInterval(updateTimer, 1000);
+  startStopBtn.onclick = () => {
+    const now = Date.now();
+    if (rec.ispaused) {
+      resumeRecord(id, now)
+    } else {
+      const passed = now - rec.starttime;
+      const remaining = Math.max(0, rec.duration - passed);
+      pauseRecord(id, remaining)
+    }
+  };
+
+  updateTimer();
+
+  buttons.appendChild(startStopBtn);
+  buttons.appendChild(deleteBtn);
+
+  div.appendChild(header);
+  div.appendChild(ownerInfo);
+  div.appendChild(timer);
+  div.appendChild(extra);
+  div.appendChild(buttons);
+  document.getElementById('records').appendChild(div);
+}
+
+async function saveRecord(record) {
   const { error } = await supabase.from('arenda').insert([record]);
   if (error) throw error;
   loadRecords();
@@ -223,21 +232,41 @@ async function markAsNotified(id) {
 }
 
 async function resumeRecord(id, now) {
-  const { error } = await supabase.from('arenda').update({ starttime: now,
-    ispaused: false
-  }).eq('id', id);
+  const { error } = await supabase.from('arenda').update({ starttime: now, ispaused: false }).eq('id', id);
   if (error) throw error;
   loadRecords();
 }
 
 async function pauseRecord(id, remaining) {
-  const { error } = await supabase.from('arenda').update({ duration: remaining, ispaused: true, starttime: null
-  }).eq('id', id);
+  const { error } = await supabase.from('arenda').update({ duration: remaining, ispaused: true, starttime: null }).eq('id', id);
   if (error) throw error;
   loadRecords();
 }
 
 window.addRecord = addRecord;
-</script>
+
+window.showTodayRecords = async function () {
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+
+  const { data, error } = await supabase
+    .from('arenda')
+    .select('*')
+    .gte('created_at', todayStart.toISOString())
+    .order('starttime', { ascending: false });
+
+  const container = document.getElementById('records');
+  container.innerHTML = '<h3>Записи за сегодня</h3>';
+
+  if (error) {
+    console.error('Ошибка загрузки записей за день:', error);
+    return;
+  }
+
+  data.forEach((rec) => createRecordElement(rec.id, rec));
+};
+
+loadRecords();
+  </script>
 </body>
 </html>
