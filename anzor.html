@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Аренда Мото</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     body {
       background-color: #121212;
@@ -65,14 +66,16 @@
     <input type="number" id="minutes" placeholder="Минуты аренды" min="0" max="59">
     <button onclick="addRecord()">💾 Сохранить</button>
     <button onclick="showTodayRecords()">📅 Сегодня</button>
+    <button onclick="showTodaySummary()">📊 Отчёт по мотоциклам</button>
+    <button onclick="exportTodaySummary()">📥 Скачать отчёт (Excel)</button>
     <div id="records"></div>
   </div>
 
-  <script type="module">
+<script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 const supabaseUrl = 'https://piewqrljovgbjdrcvbup.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBpZXdxcmxqb3ZnYmpkcmN2YnVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4NjYxNDYsImV4cCI6MjA2NjQ0MjE0Nn0.NCOpvuQG9XTiUAQLxup9Ftiy3n9_xTz__glSzUn383I';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBpZXdxcmxqb3ZnYmpkcmN2YnVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4NjYxNDYsImV4cCI6MjA2NjQ0MjE0Nn0.NCOpvuQG9XTiUAQLxup9Ftiy3n9_xTz__glSzUn383I'; // сократил, подставь свой ключ
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function addRecord() {
@@ -90,24 +93,21 @@ async function addRecord() {
   const duration = (hours * 60 + minutes) * 60000;
 
   try {
-    await saveRecord({
-      name,
-      phone,
-      owner,
-      duration,
+    await supabase.from('arenda').insert([{
+      name, phone, owner, duration,
       starttime: null,
       ispaused: true,
       notified: false
-    });
-    console.log("Запись успешно добавлена в Supabase.");
+    }]);
     document.getElementById('name').value = '';
     document.getElementById('phone').value = '';
     document.getElementById('owner').value = '';
     document.getElementById('hours').value = '';
     document.getElementById('minutes').value = '';
+    loadRecords();
   } catch (error) {
-    console.error("Ошибка при добавлении записи:", error);
-    alert("Произошла ошибка при сохранении. Проверьте консоль.");
+    console.error("Ошибка:", error);
+    alert("Ошибка при сохранении.");
   }
 }
 
@@ -116,7 +116,7 @@ async function loadRecords() {
   const container = document.getElementById('records');
   container.innerHTML = '';
   if (error) {
-    console.error('Ошибка загрузки данных:', error);
+    console.error(error);
     return;
   }
   data.forEach((rec) => createRecordElement(rec.id, rec));
@@ -167,9 +167,8 @@ function createRecordElement(id, rec) {
         const s = Math.floor((overtime % 60000) / 1000);
         timer.textContent = '⏰ Время истекло!';
         extra.textContent = `Задержка: ${h}ч ${m}м ${s}с`;
-
         if (!rec.notified) {
-          markAsNotified(id)
+          markAsNotified(id);
           rec.notified = true;
         }
       } else {
@@ -193,11 +192,11 @@ function createRecordElement(id, rec) {
   startStopBtn.onclick = () => {
     const now = Date.now();
     if (rec.ispaused) {
-      resumeRecord(id, now)
+      resumeRecord(id, now);
     } else {
       const passed = now - rec.starttime;
       const remaining = Math.max(0, rec.duration - passed);
-      pauseRecord(id, remaining)
+      pauseRecord(id, remaining);
     }
   };
 
@@ -214,32 +213,19 @@ function createRecordElement(id, rec) {
   document.getElementById('records').appendChild(div);
 }
 
-async function saveRecord(record) {
-  const { error } = await supabase.from('arenda').insert([record]);
-  if (error) throw error;
-  loadRecords();
-}
-
 async function deleteRecord(id) {
-  const { error } = await supabase.from('arenda').delete().eq('id', id);
-  if (error) throw error;
+  await supabase.from('arenda').delete().eq('id', id);
   loadRecords();
 }
-
 async function markAsNotified(id) {
-  const { error } = await supabase.from('arenda').update({ notified: true }).eq('id', id);
-  if (error) throw error;
+  await supabase.from('arenda').update({ notified: true }).eq('id', id);
 }
-
 async function resumeRecord(id, now) {
-  const { error } = await supabase.from('arenda').update({ starttime: now, ispaused: false }).eq('id', id);
-  if (error) throw error;
+  await supabase.from('arenda').update({ starttime: now, ispaused: false }).eq('id', id);
   loadRecords();
 }
-
 async function pauseRecord(id, remaining) {
-  const { error } = await supabase.from('arenda').update({ duration: remaining, ispaused: true, starttime: null }).eq('id', id);
-  if (error) throw error;
+  await supabase.from('arenda').update({ duration: remaining, ispaused: true, starttime: null }).eq('id', id);
   loadRecords();
 }
 
@@ -249,7 +235,7 @@ window.showTodayRecords = async function () {
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
 
-  const { data, error } = await supabase
+  const { data } = await supabase
     .from('arenda')
     .select('*')
     .gte('created_at', todayStart.toISOString())
@@ -257,16 +243,81 @@ window.showTodayRecords = async function () {
 
   const container = document.getElementById('records');
   container.innerHTML = '<h3>Записи за сегодня</h3>';
-
-  if (error) {
-    console.error('Ошибка загрузки записей за день:', error);
-    return;
-  }
-
   data.forEach((rec) => createRecordElement(rec.id, rec));
 };
 
+window.showTodaySummary = async function () {
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+
+  const { data } = await supabase
+    .from('arenda')
+    .select('*')
+    .gte('created_at', todayStart.toISOString());
+
+  const grouped = {};
+
+  data.forEach(rec => {
+    const owner = rec.owner || 'неизвестно';
+    if (!grouped[owner]) grouped[owner] = [];
+    grouped[owner].push(rec);
+  });
+
+  const container = document.getElementById('records');
+  container.innerHTML = '<h3>📊 Отчёт за сегодня</h3>';
+
+  for (const [owner, records] of Object.entries(grouped)) {
+    const block = document.createElement('div');
+    block.className = 'record';
+
+    let total = 0;
+    const list = records.map(r => {
+      const mins = Math.round((r.duration || 0) / 60000);
+      total += mins;
+      return `<li>${r.name} (${r.phone}) — ${mins} мин</li>`;
+    }).join('');
+
+    block.innerHTML = `
+      <strong>🛵 ${owner}</strong><br>
+      Всего аренд: ${records.length}<br>
+      Общая длительность: ${total} минут
+      <ul>${list}</ul>
+    `;
+    container.appendChild(block);
+  }
+};
+
+window.exportTodaySummary = async function () {
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+
+  const { data } = await supabase
+    .from('arenda')
+    .select('*')
+    .gte('created_at', todayStart.toISOString());
+
+  const grouped = {};
+  data.forEach(rec => {
+    const owner = rec.owner || 'неизвестно';
+    if (!grouped[owner]) grouped[owner] = [];
+    grouped[owner].push({
+      'Имя арендатора': rec.name,
+      'Телефон': rec.phone,
+      'Минуты аренды': Math.round((rec.duration || 0) / 60000)
+    });
+  });
+
+  const wb = XLSX.utils.book_new();
+  for (const [owner, records] of Object.entries(grouped)) {
+    const sheet = XLSX.utils.json_to_sheet(records);
+    XLSX.utils.book_append_sheet(wb, sheet, owner.slice(0, 31));
+  }
+
+  const filename = `Отчет_${new Date().toLocaleDateString('ru-RU')}.xlsx`;
+  XLSX.writeFile(wb, filename);
+};
+
 loadRecords();
-  </script>
+</script>
 </body>
 </html>
