@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Аренда Мото</title>
-  
   <style>
     body {
       background-color: #121212;
@@ -62,7 +61,7 @@
     <input type="text" id="name" placeholder="Имя арендатора">
     <input type="text" id="phone" placeholder="Телефон">
     <input type="number" id="hours" placeholder="Часы аренды" min="0">
-<input type="number" id="minutes" placeholder="Минуты аренды" min="0" max="59">
+    <input type="number" id="minutes" placeholder="Минуты аренды" min="0" max="59">
     <button onclick="addRecord()">💾 Сохранить</button>
     <div id="records"></div>
   </div>
@@ -70,7 +69,7 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 const supabaseUrl = 'https://piewqrljovgbjdrcvbup.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBpZXdxcmxqb3ZnYmpkcmN2YnVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4NjYxNDYsImV4cCI6MjA2NjQ0MjE0Nn0.NCOpvuQG9XTiUAQLxup9Ftiy3n9_xTz__glSzUn383I';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function addRecord() {
@@ -87,156 +86,142 @@ async function addRecord() {
   const duration = (hours * 60 + minutes) * 60000;
 
   try {
-    await saveRecord({
+    await supabase.from('arenda').insert([{
       name,
       phone,
       duration,
       starttime: null,
       ispaused: true,
       notified: false
-    });
-    console.log("Запись успешно добавлена в Supabase.");
+    }]);
+    loadRecords();
     document.getElementById('name').value = '';
     document.getElementById('phone').value = '';
     document.getElementById('hours').value = '';
     document.getElementById('minutes').value = '';
   } catch (error) {
     console.error("Ошибка при добавлении записи:", error);
-    alert("Произошла ошибка при сохранении. Проверьте консоль.");
+    alert("Произошла ошибка при сохранении.");
   }
 }
 
 async function loadRecords() {
-  const { data, error } = await supabase.from('arenda').select('*').order('starttime', { ascending: false });
+  const { data, error } = await supabase.from('arenda').select('*').order('id', { ascending: false });
   const container = document.getElementById('records');
   container.innerHTML = '';
   if (error) {
     console.error('Ошибка загрузки данных:', error);
     return;
   }
-  data.forEach((rec) => createRecordElement(rec.id, rec));
+  data.forEach((rec) => createRecordElement(rec));
 }
 
-    function createRecordElement(id, rec) {
-      const div = document.createElement('div');
-      div.className = 'record';
+function createRecordElement(rec) {
+  const div = document.createElement('div');
+  div.className = 'record';
 
-      const header = document.createElement('div');
-      header.className = 'record-header';
-      header.innerHTML = `<strong>${rec.name}</strong><span>📞 ${rec.phone}</span>`;
+  const header = document.createElement('div');
+  header.className = 'record-header';
+  header.innerHTML = `<strong>${rec.name}</strong><span>📞 ${rec.phone}</span>`;
 
-      const timer = document.createElement('p');
-      const extra = document.createElement('p');
-      extra.className = 'extra-info';
+  const timer = document.createElement('p');
+  const extra = document.createElement('p');
+  extra.className = 'extra-info';
 
-      const buttons = document.createElement('div');
-      buttons.className = 'record-buttons';
+  const buttons = document.createElement('div');
+  buttons.className = 'record-buttons';
 
-      const startStopBtn = document.createElement('button');
-      const deleteBtn = document.createElement('button');
+  const startStopBtn = document.createElement('button');
+  const deleteBtn = document.createElement('button');
 
-      deleteBtn.textContent = 'Удалить';
-      deleteBtn.onclick = () => deleteRecord(id);
+  deleteBtn.textContent = 'Удалить';
+  deleteBtn.onclick = async () => {
+    await supabase.from('arenda').delete().eq('id', rec.id);
+    loadRecords();
+  };
 
-      let interval;
-      function updateTimer() {
-        const now = Date.now();
-        if (!rec.starttime) {
-          timer.textContent = '⏹ Не запущено';
-          extra.textContent = '';
-          return;
-        }
-
-        if (!rec.ispaused) {
-          const passed = now - rec.starttime;
-          const left = rec.duration - passed;
-
-          if (left <= 0) {
-            const overtime = -left;
-            const h = Math.floor(overtime / 3600000);
-            const m = Math.floor((overtime % 3600000) / 60000);
-            const s = Math.floor((overtime % 60000) / 1000);
-            timer.textContent = '⏰ Время истекло!';
-            extra.textContent = `Задержка: ${h}ч ${m}м ${s}с`;
-
-            if (!rec.notified) {
-              markAsNotified(id)
-              rec.notified = true;
-            }
-          } else {
-            const h = Math.floor(left / 3600000);
-            const m = Math.floor((left % 3600000) / 60000);
-            const s = Math.floor((left % 60000) / 1000);
-            timer.textContent = `⏳ Осталось: ${h}ч ${m}м ${s}с`;
-            extra.textContent = '';
-          }
-        } else {
-          const h = Math.floor(rec.duration / 3600000);
-          const m = Math.floor((rec.duration % 3600000) / 60000);
-          const s = Math.floor((rec.duration % 60000) / 1000);
-          timer.textContent = `⏸ Приостановлено: ${h}ч ${m}м ${s}с`;
-          extra.textContent = '';
-        }
-      }
-
-      startStopBtn.textContent = rec.ispaused ? '▶️ Старт' : '⏸ Стоп';
-      interval = setInterval(updateTimer, 1000);
-      startStopBtn.onclick = () => {
-        const now = Date.now();
-        if (rec.ispaused) {
-          resumeRecord(id, now)
-        } else {
-          const passed = now - rec.starttime;
-          const remaining = Math.max(0, rec.duration - passed);
-          pauseRecord(id, remaining)
-        }
-      };
-
-      updateTimer();
-
-      buttons.appendChild(startStopBtn);
-      buttons.appendChild(deleteBtn);
-
-      div.appendChild(header);
-      div.appendChild(timer);
-      div.appendChild(extra);
-      div.appendChild(buttons);
-      document.getElementById('records').appendChild(div);
+  let interval;
+  function updateTimer() {
+    const now = Date.now();
+    if (!rec.starttime) {
+      timer.textContent = '⏹ Не запущено';
+      extra.textContent = '';
+      return;
     }
 
-    loadRecords();
-  async function saveRecord(record) {
-  const { error } = await supabase.from('arenda').insert([record]);
-  if (error) throw error;
-  loadRecords();
+    if (!rec.ispaused) {
+      const passed = now - rec.starttime;
+      const left = rec.duration - passed;
+
+      if (left <= 0) {
+        const overtime = -left;
+        const h = Math.floor(overtime / 3600000);
+        const m = Math.floor((overtime % 3600000) / 60000);
+        const s = Math.floor((overtime % 60000) / 1000);
+        timer.textContent = '⏰ Время истекло!';
+        extra.textContent = `Задержка: ${h}ч ${m}м ${s}с`;
+
+        if (!rec.notified) {
+          supabase.from('arenda').update({ notified: true }).eq('id', rec.id);
+          rec.notified = true;
+        }
+      } else {
+        const h = Math.floor(left / 3600000);
+        const m = Math.floor((left % 3600000) / 60000);
+        const s = Math.floor((left % 60000) / 1000);
+        timer.textContent = `⏳ Осталось: ${h}ч ${m}м ${s}с`;
+        extra.textContent = '';
+      }
+    } else {
+      const h = Math.floor(rec.duration / 3600000);
+      const m = Math.floor((rec.duration % 3600000) / 60000);
+      const s = Math.floor((rec.duration % 60000) / 1000);
+      timer.textContent = `⏸ Приостановлено: ${h}ч ${m}м ${s}с`;
+      extra.textContent = '';
+    }
+  }
+
+  startStopBtn.textContent = rec.ispaused ? '▶️ Старт' : '⏸ Стоп';
+  interval = setInterval(updateTimer, 1000);
+
+  startStopBtn.onclick = async () => {
+    const now = Date.now();
+    if (rec.ispaused) {
+      await supabase.from('arenda').update({
+        starttime: now,
+        ispaused: false
+      }).eq('id', rec.id);
+      rec.starttime = now;
+      rec.ispaused = false;
+    } else {
+      const passed = now - rec.starttime;
+      const remaining = Math.max(0, rec.duration - passed);
+      await supabase.from('arenda').update({
+        duration: remaining,
+        ispaused: true,
+        starttime: null
+      }).eq('id', rec.id);
+      rec.duration = remaining;
+      rec.ispaused = true;
+      rec.starttime = null;
+    }
+    startStopBtn.textContent = rec.ispaused ? '▶️ Старт' : '⏸ Стоп';
+    updateTimer();
+  };
+
+  updateTimer();
+
+  buttons.appendChild(startStopBtn);
+  buttons.appendChild(deleteBtn);
+
+  div.appendChild(header);
+  div.appendChild(timer);
+  div.appendChild(extra);
+  div.appendChild(buttons);
+  document.getElementById('records').appendChild(div);
 }
 
-async function deleteRecord(id) {
-  const { error } = await supabase.from('arenda').delete().eq('id', id);
-  if (error) throw error;
-  loadRecords();
-}
-
-async function markAsNotified(id) {
-  const { error } = await supabase.from('arenda').update({ notified: true }).eq('id', id);
-  if (error) throw error;
-}
-
-async function resumeRecord(id, now) {
-  const { error } = await supabase.from('arenda').update({ starttime: now,
-    ispaused: false
-  }).eq('id', id);
-  if (error) throw error;
-  loadRecords();
-}
-
-async function pauseRecord(id, remaining) {
-  const { error } = await supabase.from('arenda').update({ duration: remaining, ispaused: true, starttime: null
-  }).eq('id', id);
-  if (error) throw error;
-  loadRecords();
-}
-
+loadRecords();
 window.addRecord = addRecord;
 </script>
 </body>
