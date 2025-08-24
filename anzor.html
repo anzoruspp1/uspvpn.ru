@@ -5,12 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Аренда Мото</title>
   
-    <!-- Подключаем Telegram WebApp API -->
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script>
-    window.Telegram.WebApp.expand(); // Разворачиваем на весь экран
-  </script>
-  
   <style>
     body {
       background-color: #121212;
@@ -97,8 +91,8 @@ async function addRecord() {
       name,
       phone,
       duration,
-      starttime: Date.now(),
-      ispaused: false,
+      starttime: null,
+      ispaused: true,
       notified: false
     });
     console.log("Запись успешно добавлена в Supabase.");
