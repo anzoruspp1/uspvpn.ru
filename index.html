@@ -1,263 +1,222 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>USPVPN — Самый быстрый VPN</title>
-  <meta name="description" content="USP VPN — ваш надёжный союзник в интернете: безопасность данных, приватность и свобода в сети." />
-  <meta name="keywords" content="VPN, USPVPN, VPN Россия, безопасный интернет" />
-  <meta property="og:title" content="USPVPN — Самый быстрый VPN" />
-  <meta property="og:description" content="USP VPN — ваш надёжный союзник в интернете: безопасность данных, приватность и свобода в сети." />
-  <meta property="og:image" content="images/93923634-936f-1e07-a65d-94681159c928.png" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;800&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+  <meta name="description" content="USP VPN — ваш надежный союзник в интернете. Безопасность, анонимность и свобода в сети!">
+  <meta name="keywords" content="VPN, USPVPN, лучший VPN, безопасность, приватность">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet" />
   <style>
-    /* Reset + base */
-    :root{
-      --bg:#0f1724; /* dark background */
-      --card:#0b1220;
-      --muted:#9aa7bd;
-      --accent:#ff7a59;
-      --accent-2:#3dd9c3;
-      --glass: rgba(255,255,255,0.04);
-      --radius:14px;
-      color-scheme: dark;
-      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg) 0%, #07101a 100%);color:#e6eef8;-webkit-font-smoothing:antialiased}
-    a{color:inherit;text-decoration:none}
-    .container{max-width:1100px;margin:0 auto;padding:0 16px}
-
-    /* Header */
-    header{position:sticky;top:0;backdrop-filter:blur(6px);background:linear-gradient(180deg, rgba(10,16,24,0.55), rgba(10,16,24,0.35));border-bottom:1px solid rgba(255,255,255,0.03);z-index:40}
-    .nav{display:flex;align-items:center;justify-content:space-between;height:72px}
-    .brand{display:flex;align-items:center;gap:12px}
-    .logo{
-      display:inline-flex;align-items:center;gap:10px;font-weight:800;font-size:1.05rem;color:var(--accent);
-    }
-    .logo .mark{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:inline-grid;place-items:center;font-weight:800;color:#07101a}
-    nav.primary{display:flex;gap:12px;align-items:center}
-    nav.primary a{padding:8px 12px;border-radius:10px;color:var(--muted);font-weight:600}
-    .cta{background:linear-gradient(90deg,var(--accent),var(--accent-2));padding:9px 14px;border-radius:10px;color:#07101a;font-weight:700;box-shadow:0 8px 24px rgba(59,217,195,0.08)}
-
-    /* Mobile menu button */
-    .menu-btn{display:flex;align-items:center;gap:8px;border:0;background:transparent;color:var(--muted);padding:8px;border-radius:8px}
-    .menu-btn svg{width:20px;height:20px}
-
-    /* Hero */
-    .hero{padding:34px 0 18px}
-    .hero-grid{display:grid;grid-template-columns:1fr;gap:18px;align-items:center}
-    .hero-card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:22px;border-radius:16px;border:1px solid rgba(255,255,255,0.03);display:flex;flex-direction:column;gap:14px}
-    .eyebrow{font-weight:700;color:var(--accent);font-size:.95rem}
-    h1{margin:0;font-family:Montserrat, Inter, sans-serif;font-weight:800;line-height:1.02;font-size:1.6rem;color:#fff}
-    p.lead{margin:0;color:var(--muted);font-size:0.98rem}
-
-    .hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px}
-    .btn{display:inline-flex;align-items:center;gap:10px;padding:10px 14px;border-radius:12px;font-weight:700}
-    .btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
-    .hero-media{display:block;border-radius:12px;overflow:hidden;max-height:220px}
-    .hero-media img{width:100%;height:auto;display:block}
-
-    /* Pricing */
-    .section{padding:18px 0 38px}
-    .section-title{display:flex;align-items:center;gap:12px;margin:0 0 12px}
-    .section-title h2{margin:0;font-size:1.05rem;font-weight:800}
-    .grid{display:grid;gap:12px}
-    .prices{grid-template-columns:1fr}
-    .card{background:var(--card);padding:16px;border-radius:12px;border:1px solid rgba(255,255,255,0.03);display:flex;flex-direction:column;gap:8px}
-    .card .icon{width:60px;height:60px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));display:grid;place-items:center;font-weight:800}
-    .price{font-weight:800;font-size:1.2rem;color:#fff}
-    .muted{color:var(--muted);font-size:.95rem}
-    .buy{margin-top:10px}
-
-    /* Footer */
-    footer{padding:18px 0;border-top:1px solid rgba(255,255,255,0.03);margin-top:8px;color:var(--muted)}
-    .foot-inner{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
-
-    /* Responsive: tablet+ */
-    @media(min-width:780px){
-      .hero-grid{grid-template-columns:1fr 420px;gap:24px}
-      .prices{grid-template-columns:repeat(4,1fr)}
-      nav.primary a{display:inline-block}
+    :root {
+      --accent: #f58d54;
+      --bg: #fefefe;
+      --text: #222;
+      --muted: #666;
+      --radius: 14px;
     }
 
-    /* Accessibility + focus */
-    a:focus, button:focus {outline:3px solid rgba(59,217,195,0.16);outline-offset:3px;border-radius:10px}
-    /* small tweaks */
-    .note{font-size:.9rem;color:var(--muted)}
-    .card .desc{color:var(--muted);font-size:.95rem}
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Montserrat", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      text-align: center;
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--accent), #ffb97a);
+      color: #fff;
+      padding: 3rem 1rem 4rem;
+    }
+
+    header h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+    }
+
+    header p {
+      font-size: 1rem;
+      margin-top: 0.5rem;
+      color: #fff9;
+    }
+
+    .hero-buttons {
+      margin-top: 2rem;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .btn {
+      background: #fff;
+      color: var(--accent);
+      padding: 0.9rem 1.5rem;
+      border-radius: var(--radius);
+      font-weight: 600;
+      text-decoration: none;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+      transition: all 0.25s;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+    }
+
+    section {
+      padding: 3rem 1rem;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    section h2 {
+      font-size: 1.8rem;
+      margin-bottom: 2rem;
+      color: var(--accent);
+    }
+
+    .plans {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    .plan {
+      background: #fff;
+      border-radius: var(--radius);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.05);
+      padding: 2rem 1.5rem;
+      transition: transform 0.25s, box-shadow 0.25s;
+    }
+
+    .plan:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    }
+
+    .plan img {
+      width: 50px;
+      margin-bottom: 1rem;
+    }
+
+    .plan h3 {
+      font-size: 1.3rem;
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+    }
+
+    .plan p {
+      font-size: 0.95rem;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+
+    .price {
+      font-weight: 700;
+      color: var(--text);
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+    }
+
+    .plan a {
+      display: inline-block;
+      text-decoration: none;
+      background: var(--accent);
+      color: #fff;
+      padding: 0.8rem 1.4rem;
+      border-radius: var(--radius);
+      transition: background 0.25s;
+    }
+
+    .plan a:hover {
+      background: #ff9f6c;
+    }
+
+    footer {
+      padding: 2rem 1rem;
+      background: #111;
+      color: #ccc;
+      font-size: 0.9rem;
+    }
+
+    footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    @media (min-width: 700px) {
+      .plans {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (min-width: 1000px) {
+      .plans {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
   </style>
 </head>
 <body>
+
   <header>
-    <div class="container nav">
-      <div class="brand">
-        <div class="logo">
-          <div class="mark">US</div>
-          <div>
-            <div style="font-size:.95rem">USPVPN</div>
-            <div style="font-size:.75rem;color:var(--muted);margin-top:-2px">iPhone • Android • Computer • TV</div>
-          </div>
-        </div>
-      </div>
+    <h1>USPVPN</h1>
+    <p>Безопасность. Анонимность. Свобода в сети.</p>
 
-      <nav class="primary" aria-label="Основная навигация">
-        <a href="#services" class="note">Тарифы</a>
-        <a href="#contacts" class="note">Контакты</a>
-        <a href="tg://resolve?domain=uspvpn_bot&start=cmd_run_469230000" class="cta">TELEGRAM BOT</a>
-        <button class="menu-btn" id="menuToggle" aria-expanded="false" aria-controls="mobileMenu" title="Открыть меню">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 7h16M4 12h16M4 17h16" stroke-width="1.6" stroke-linecap="round"/></svg>
-        </button>
-      </nav>
-    </div>
-
-    <!-- mobile off-canvas simple -->
-    <div id="mobileMenu" style="display:none;background:var(--card);padding:12px;border-top:1px solid rgba(255,255,255,0.02)">
-      <div class="container" style="display:flex;flex-direction:column;gap:8px">
-        <a href="#services" class="note">Тарифы</a>
-        <a href="#contacts" class="note">Контакты</a>
-        <a href="tg://resolve?domain=uspvpn_bot&start=cmd_run_469230000" class="cta">TELEGRAM BOT</a>
-        <a href="https://t.me/proxy?server=83.222.24.117&port=443&secret=02f322e18da0a24f0a9a00d2870aab7b" class="btn secondary" style="justify-content:center">TELEGRAM PROXY</a>
-      </div>
+    <div class="hero-buttons">
+      <a href="tg://resolve?domain=uspvpn_bot" class="btn">Telegram Bot</a>
+      <a href="https://t.me/proxy?server=83.222.24.117&port=443&secret=02f322e18da0a24f0a9a00d2870aab7b" class="btn">Telegram Proxy</a>
     </div>
   </header>
 
-  <main class="container">
-    <section class="hero">
-      <div class="hero-grid">
-        <div class="hero-card" role="region" aria-label="USP VPN — информация">
-          <div class="eyebrow">USP VPN</div>
-          <h1>Надёжная защита и приватность — просто и быстро</h1>
-          <p class="lead">USP VPN — это ваш союзник в интернете. Шифрование, анонимность и простая настройка на телефоне, компьютере и телевизоре.</p>
-          <div class="hero-actions">
-            <a href="tg://resolve?domain=uspvpn_bot&start=cmd_run_469230000" class="btn">Открыть бота</a>
-            <a href="#services" class="btn secondary">Посмотреть тарифы</a>
-            <a href="https://t.me/proxy?server=83.222.24.117&port=443&secret=02f322e18da0a24f0a9a00d2870aab7b" class="btn secondary">TELEGRAM PROXY</a>
-          </div>
-          <div style="margin-top:8px" class="note">Работает на iPhone, Android, Windows, macOS и Android TV.</div>
-        </div>
-
-        <div class="hero-media" aria-hidden="true">
-          <!-- замените src на ваш реальный файл; держите 16:10 или 4:3 -->
-          <img src="images/93923634-936f-1e07-a65d-94681159c928.png" alt="USPVPN preview" loading="lazy">
-        </div>
-      </div>
-    </section>
-
-    <!-- Тарифы -->
-    <section id="services" class="section" aria-labelledby="pricesTitle">
-      <div class="section-title">
-        <h2 id="pricesTitle">Наши тарифы</h2>
+  <section>
+    <h2>Наши тарифы</h2>
+    <div class="plans">
+      <div class="plan">
+        <img src="images/vpn.png" alt="VPN">
+        <h3>1 месяц</h3>
+        <p>Поддержка: Телефон, ПК, Планшет, Android TV</p>
+        <div class="price">100 ₽</div>
+        <a href="tg://resolve?domain=uspvpn_bot&start=cmd_run_1102256206">Купить</a>
       </div>
 
-      <div class="grid prices">
-        <!-- карточка -->
-        <div class="card" role="article" aria-label="Тариф 1 месяц">
-          <div style="display:flex;gap:12px;align-items:center">
-            <div class="icon">1м</div>
-            <div>
-              <div class="price">1 Месяц — 100 ₽</div>
-              <div class="muted">Доступ для телефона, ПК и Android TV</div>
-            </div>
-          </div>
-          <p class="desc">Подходит для короткого теста скорости и совместимости.</p>
-          <div class="buy">
-            <a class="btn" href="tg://resolve?domain=uspvpn_bot&start=cmd_run_1102256206">Купить в боте</a>
-          </div>
-        </div>
-
-        <div class="card" role="article" aria-label="Тариф 3 месяца">
-          <div style="display:flex;gap:12px;align-items:center">
-            <div class="icon">3м</div>
-            <div>
-              <div class="price">3 Месяца — 300 ₽</div>
-              <div class="muted">Оптимальный срок по соотношению цена/качество</div>
-            </div>
-          </div>
-          <p class="desc">Популярный выбор — стабильный доступ на несколько месяцев.</p>
-          <div class="buy">
-            <a class="btn" href="tg://resolve?domain=uspvpn_bot&start=cmd_run_607142663">Купить в боте</a>
-          </div>
-        </div>
-
-        <div class="card" role="article" aria-label="Тариф 6 месяцев">
-          <div style="display:flex;gap:12px;align-items:center">
-            <div class="icon">6м</div>
-            <div>
-              <div class="price">6 Месяцев — 600 ₽</div>
-              <div class="muted">Долгосрочный тариф — меньше хлопот</div>
-            </div>
-          </div>
-          <p class="desc">Рассчитан на пользователей с регулярными потребностями в VPN.</p>
-          <div class="buy">
-            <a class="btn" href="tg://resolve?domain=uspvpn_bot&start=cmd_run_3323879784">Купить в боте</a>
-          </div>
-        </div>
-
-        <div class="card" role="article" aria-label="Тариф 12 месяцев">
-          <div style="display:flex;gap:12px;align-items:center">
-            <div class="icon">12м</div>
-            <div>
-              <div class="price">12 Месяцев — 1200 ₽</div>
-              <div class="muted">Лучшее предложение — максимальная экономия</div>
-            </div>
-          </div>
-          <p class="desc">Полный год защищённого и быстрого доступа — выгодно для постоянных пользователей.</p>
-          <div class="buy">
-            <a class="btn" href="tg://resolve?domain=uspvpn_bot&start=cmd_run_1206615571">Купить в боте</a>
-          </div>
-        </div>
+      <div class="plan">
+        <img src="images/vpn.png" alt="VPN">
+        <h3>3 месяца</h3>
+        <p>Поддержка: Телефон, ПК, Планшет, Android TV</p>
+        <div class="price">300 ₽</div>
+        <a href="tg://resolve?domain=uspvpn_bot&start=cmd_run_607142663">Купить</a>
       </div>
-    </section>
 
-    <!-- Примечания / контакты -->
-    <section id="contacts" class="section" aria-labelledby="contactTitle">
-      <div class="section-title"><h2 id="contactTitle">Контакты и поддержка</h2></div>
-      <div style="display:flex;gap:12px;flex-direction:column">
-        <div class="card" style="display:flex;flex-direction:column;gap:8px">
-          <div class="muted">Телеграм-бот</div>
-          <a class="btn" href="tg://resolve?domain=uspvpn_bot&start=cmd_run_469230000">Открыть USP VPN в Telegram</a>
-          <div class="note" style="margin-top:8px">Проблемы с подключением? Напишите в бота — поддержка отвечает быстро.</div>
-        </div>
-
-        <div class="card" style="display:flex;flex-direction:column;gap:8px">
-          <div class="muted">Telegram proxy</div>
-          <a class="btn secondary" href="https://t.me/proxy?server=83.222.24.117&port=443&secret=02f322e18da0a24f0a9a00d2870aab7b">Подключить proxy</a>
-          <div class="note">Используйте прокси только как запасной вариант.</div>
-        </div>
+      <div class="plan">
+        <img src="images/vpn.png" alt="VPN">
+        <h3>6 месяцев</h3>
+        <p>Поддержка: Телефон, ПК, Планшет, Android TV</p>
+        <div class="price">600 ₽</div>
+        <a href="tg://resolve?domain=uspvpn_bot&start=cmd_run_3323879784">Купить</a>
       </div>
-    </section>
-  </main>
+
+      <div class="plan">
+        <img src="images/vpn.png" alt="VPN">
+        <h3>12 месяцев</h3>
+        <p>Поддержка: Телефон, ПК, Планшет, Android TV</p>
+        <div class="price">1200 ₽</div>
+        <a href="tg://resolve?domain=uspvpn_bot&start=cmd_run_1206615571">Купить</a>
+      </div>
+    </div>
+  </section>
 
   <footer>
-    <div class="container foot-inner">
-      <div>&copy; <span id="year"></span> USPVPN</div>
-      <div class="note">Безопасность и приватность — наша приоритетная цель.</div>
-    </div>
+    <p>© 2025 USPVPN. Все права защищены. | <a href="tg://resolve?domain=uspvpn_bot">Связаться</a></p>
   </footer>
 
-  <script>
-    // small interactions: mobile menu toggle + set year
-    (function(){
-      const menuBtn = document.getElementById('menuToggle');
-      const mobileMenu = document.getElementById('mobileMenu');
-      menuBtn && menuBtn.addEventListener('click', () => {
-        const open = mobileMenu.style.display !== 'block';
-        mobileMenu.style.display = open ? 'block' : 'none';
-        menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
-      });
-      document.getElementById('year').textContent = new Date().getFullYear();
-      // Smooth scroll for internal links
-      document.querySelectorAll('a[href^="#"]').forEach(a=>{
-        a.addEventListener('click', (e)=>{
-          const id = a.getAttribute('href').slice(1);
-          if(!id) return;
-          const el = document.getElementById(id);
-          if(el){ e.preventDefault(); el.scrollIntoView({behavior:'smooth',block:'start'}); }
-        });
-      });
-    })();
-  </script>
 </body>
 </html>
