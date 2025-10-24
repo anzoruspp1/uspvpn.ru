@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>USPVPN — Самый быстрый VPN</title>
   <meta name="description" content="USP VPN — ваш надежный союзник в интернете. Безопасность, анонимность и свобода в сети!">
-  <meta name="keywords" content="VPN, USPVPN, лучший VPN, безопасность, приватность">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet" />
   <style>
     :root {
@@ -14,6 +13,18 @@
       --text: #222;
       --muted: #666;
       --radius: 14px;
+      --card-bg: #fff;
+      --footer-bg: #111;
+      --footer-text: #ccc;
+    }
+
+    [data-theme="dark"] {
+      --bg: #121212;
+      --text: #f2f2f2;
+      --muted: #aaa;
+      --card-bg: #1e1e1e;
+      --footer-bg: #000;
+      --footer-text: #777;
     }
 
     * {
@@ -28,12 +39,14 @@
       color: var(--text);
       line-height: 1.5;
       text-align: center;
+      transition: background 0.4s, color 0.4s;
     }
 
     header {
       background: linear-gradient(135deg, var(--accent), #ffb97a);
       color: #fff;
       padding: 3rem 1rem 4rem;
+      position: relative;
     }
 
     header h1 {
@@ -45,6 +58,24 @@
       font-size: 1rem;
       margin-top: 0.5rem;
       color: #fff9;
+    }
+
+    .theme-toggle {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: rgba(255,255,255,0.15);
+      border: none;
+      color: #fff;
+      padding: 0.6rem 0.8rem;
+      border-radius: var(--radius);
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .theme-toggle:hover {
+      background: rgba(255,255,255,0.25);
     }
 
     .hero-buttons {
@@ -75,6 +106,7 @@
       padding: 3rem 1rem;
       max-width: 1000px;
       margin: 0 auto;
+      transition: background 0.4s, color 0.4s;
     }
 
     section h2 {
@@ -90,11 +122,11 @@
     }
 
     .plan {
-      background: #fff;
+      background: var(--card-bg);
       border-radius: var(--radius);
       box-shadow: 0 6px 20px rgba(0,0,0,0.05);
       padding: 2rem 1.5rem;
-      transition: transform 0.25s, box-shadow 0.25s;
+      transition: transform 0.25s, box-shadow 0.25s, background 0.4s;
     }
 
     .plan:hover {
@@ -142,9 +174,10 @@
 
     footer {
       padding: 2rem 1rem;
-      background: #111;
-      color: #ccc;
+      background: var(--footer-bg);
+      color: var(--footer-text);
       font-size: 0.9rem;
+      transition: background 0.4s, color 0.4s;
     }
 
     footer a {
@@ -168,6 +201,8 @@
 <body>
 
   <header>
+    <button class="theme-toggle" id="theme-toggle">🌙 Тёмная тема</button>
+
     <h1>USPVPN</h1>
     <p>Безопасность. Анонимность. Свобода в сети.</p>
 
@@ -217,6 +252,30 @@
   <footer>
     <p>© 2025 USPVPN. Все права защищены. | <a href="tg://resolve?domain=uspvpn_bot">Связаться</a></p>
   </footer>
+
+  <script>
+    const toggle = document.getElementById('theme-toggle');
+    const body = document.body;
+    const savedTheme = localStorage.getItem('theme');
+
+    if (savedTheme === 'dark') {
+      body.setAttribute('data-theme', 'dark');
+      toggle.textContent = '☀️ Светлая тема';
+    }
+
+    toggle.addEventListener('click', () => {
+      const isDark = body.getAttribute('data-theme') === 'dark';
+      if (isDark) {
+        body.removeAttribute('data-theme');
+        toggle.textContent = '🌙 Тёмная тема';
+        localStorage.setItem('theme', 'light');
+      } else {
+        body.setAttribute('data-theme', 'dark');
+        toggle.textContent = '☀️ Светлая тема';
+        localStorage.setItem('theme', 'dark');
+      }
+    });
+  </script>
 
 </body>
 </html>
